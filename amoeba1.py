@@ -12,12 +12,15 @@ screen = pygame.display.set_mode((w, h))
 pd = pygame.draw
 
 master = cake.c_master(i_friction=.92)
+
+# test cases
 na = master.make_node(1.0, numpy.array([20., 30.]), i_vel=numpy.array([0.01, 0.]))
 nb = master.make_node(1.0, numpy.array([80., 200.]))
 thaspring = master.make_spring(na, nb, 90., .02)
 
 # circle of circle_res
-circle_res = 8
+circle_res = 4
+circle_res *= 2
 circle_radius = 100
 circle = []
 #unit circle generation
@@ -34,11 +37,11 @@ for i in range(0,circle_res):
 	length = numpy.linalg.norm(circle[i].pos - circle[i-1].pos)
 	master.make_spring(circle[i], circle[i-1], float(length), .02)
 #muscle generator
-muscle_count = 4
+muscle_count = circle_res/2
 muscles = []
 muscle_length = numpy.linalg.norm(circle[i].pos - circle[i-4].pos)
 for i in range(0,muscle_count):
-	muscles.append( master.make_spring(circle[i], circle[i-4], circle_radius*2, .02) )
+	muscles.append( master.make_spring(circle[i], circle[i-muscle_count], circle_radius*2, .02) )
 
 
 frame = -1
@@ -46,8 +49,12 @@ while True:
 	frame += 1
 #	print "\n"
 	
+#	for i in range(0,muscle_count):
+#		
+	
 	master.update()
 	
+	# Graphics
 	screen.fill((255, 255, 255))
 	
 	drawsprings = master.list_springs()
