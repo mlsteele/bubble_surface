@@ -45,11 +45,11 @@ class c_master:
 						self.bucket[w].act(self.bucket[i])
 				self.bucket[i].vel *= self.friction
 				self.bucket[i].accel += self.gravity_glob
+				self.bucket[i].update()
 				if (self.ground):
 					if (self.bucket[i].pos[1] >= self.ground):
 						self.bucket[i].pos[1] = self.ground
 						self.bucket[i].vel[0] *= self.ground_friction
-				self.bucket[i].update()
 	
 	def list_nodes(self):
 		list = []

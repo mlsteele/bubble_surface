@@ -6,12 +6,12 @@ import time
 import pygame
 
 # Graphics initiation
-w = 500
-h = 500
+w = 1200
+h = 250
 screen = pygame.display.set_mode((w, h))
 pd = pygame.draw
 
-master = cake.c_master(friction=.92, gravity_glob=numpy.array([0, .2]), ground=(h-10), ground_friction=.2)
+master = cake.c_master(friction=.92, gravity_glob=numpy.array([0, .4]), ground=(h-10), ground_friction=.2)
 #ground_wall = master.make_wall(numpy.array([(0, h-5), (w, h-5)]))
 
 # test cases
@@ -21,7 +21,7 @@ thaspring = master.make_spring(na, nb, 90., .02)
 
 # AMOEBA
 # human input
-circle_res = 8
+circle_res = 3
 circle_radius = 100.
 muscle_period = 30.
 muscle_amp = 80.
@@ -39,7 +39,7 @@ for i in range(0,circle_res):
 # mass transform
 for i in range(0,circle_res):
 	circle[i].pos *= 100
-	circle[i].pos += numpy.array([w/2, h/2])
+	circle[i].pos += numpy.array([circle_radius+10, h/2])
 
 # ring spring generator
 for i in range(0,circle_res):
