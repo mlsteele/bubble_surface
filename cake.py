@@ -22,8 +22,15 @@ class c_master:
 		self.bucklen = len(self.bucket)
 	
 	def update(self):
+		# update springs
 		for i in range(0,self.bucklen):
-			self.bucket[i].update()
+			if isinstance(self.bucket[i], c_spring):
+				self.bucket[i].update()
+		
+		# update nodes
+		for i in range(0,self.bucklen):
+			if isinstance(self.bucket[i], c_node):
+				self.bucket[i].update()
 
 class c_node:
 	def __init__(self, i_master, i_mass, i_pos, i_vel):
@@ -51,4 +58,9 @@ class c_spring:
 		self.springk = float(i_springk)
 	
 	def update(self):
-		pass
+		diffv = self.ma.pos - self.mb.pos
+		length = len(diffv)
+		forcea = -1*self.springk*(self.targl - length) * (diffv / numpy.linalg.norm(diffv))
+		forceb = -1*forcea
+		self.ma.push(forcea)
+		self.mb.push(forceb)
