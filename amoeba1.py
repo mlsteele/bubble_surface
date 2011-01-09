@@ -27,14 +27,18 @@ for i in range(0,circle_res):
 	circle.append(master.make_node(1.0, numpy.array([posx, posy])))
 #mass transform
 for i in range(0,circle_res):
-	circle[i].pos *= circle_radius
+	circle[i].pos *= 100
 	circle[i].pos += numpy.array([w/2, h/2])
 #ring spring generator
 for i in range(0,circle_res):
 	length = numpy.linalg.norm(circle[i].pos - circle[i-1].pos)
 	master.make_spring(circle[i], circle[i-1], float(length), .02)
 #muscle generator
+muscle_count = 4
 muscles = []
+muscle_length = numpy.linalg.norm(circle[i].pos - circle[i-4].pos)
+for i in range(0,muscle_count):
+	muscles.append( master.make_spring(circle[i], circle[i-4], circle_radius*2, .02) )
 
 
 frame = -1
