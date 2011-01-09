@@ -9,9 +9,17 @@ class c_master:
 	
 	def make_node(self, i_mass, i_pos, i_vel=numpy.zeros(2)):
 		newnode = c_node(self, i_mass, i_pos, i_vel)
-		self.bucket.append(newnode)
-		self.bucklen = len(self.bucket)
+		self.register_obj(newnode)
 		return newnode
+	
+	def make_spring(self, i_ma, i_mb, i_targl, i_springk):
+		newspring = c_spring(self, i_ma, i_mb, i_targl, i_springk)
+		self.register_obj(newspring)
+		return newspring
+	
+	def register_obj(self, i_obj):
+		self.bucket.append(i_obj)
+		self.bucklen = len(self.bucket)
 	
 	def update(self):
 		for i in range(0,self.bucklen):
@@ -33,3 +41,14 @@ class c_node:
 		self.vel += self.accel
 		self.pos += self.vel
 		self.accel = numpy.zeros(2)
+
+class c_spring:
+	def __init__(self, i_master, i_ma, i_mb, i_targl, i_springk):
+		self.master = i_master
+		self.ma = i_ma
+		self.mb = i_mb
+		self.targl = float(i_targl)
+		self.springk = float(i_springk)
+	
+	def update(self):
+		pass
