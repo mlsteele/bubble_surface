@@ -3,9 +3,11 @@ import math
 import time
 
 class c_master:
-	def __init__(self):
+	def __init__(self, i_friction=1):
 		self.bucket = []
 		self.bucklen = 0
+		
+		self.friction = i_friction
 	
 	def make_node(self, i_mass, i_pos, i_vel=numpy.zeros(2)):
 		newnode = c_node(self, i_mass, i_pos, i_vel)
@@ -31,6 +33,7 @@ class c_master:
 		for i in range(0,self.bucklen):
 			if isinstance(self.bucket[i], c_node):
 				self.bucket[i].update()
+				self.bucket[i].vel *= self.friction
 
 class c_node:
 	def __init__(self, i_master, i_mass, i_pos, i_vel):
@@ -58,9 +61,9 @@ class c_spring:
 		self.springk = float(i_springk)
 	
 	def update(self):
-		diffv = self.ma.pos - self.mb.pos
-		length = len(diffv)
-		forcea = -1*self.springk*(self.targl - length) * (diffv / numpy.linalg.norm(diffv))
+		diffv = self.mb.pos - self.ma.pos
+		length = numpy.linalg.norm(diffv)
+		forcea = -1*self.springk*(self.targl - length) * (diffv / length)
 		forceb = -1*forcea
 		self.ma.push(forcea)
 		self.mb.push(forceb)
