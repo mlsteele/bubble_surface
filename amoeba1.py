@@ -11,24 +11,29 @@ h = 250
 screen = pygame.display.set_mode((w, h))
 pd = pygame.draw
 
-master = cake.c_master(friction=.92, gravity_glob=numpy.array([0, .4]), ground=(h-10), slip=.2)
+master = cake.c_master(friction=.92, gravity_glob=numpy.array([0, 5000]), ground=(h-10), slip=.2)
 #ground_wall = master.make_wall(numpy.array([(0, h-5), (w, h-5)]))
 
-# test cases
+# physics sandbox
 na = master.make_node(1.0, numpy.array([w-40., 30.]), i_vel=numpy.array([0.01, 0.]))
 nb = master.make_node(1.0, numpy.array([w-200., 200.]))
 nc = master.make_node(1.0, numpy.array([w-120., 130.]))
-master.make_spring(na, nb, 90., .2)
-master.make_spring(na, nc, 90., .2)
-master.make_spring(nb, nc, 90., .2)
+tmpk = 1000
+master.make_spring(na, nb, 90., tmpk)
+master.make_spring(na, nc, 90., tmpk)
+master.make_spring(nb, nc, 90., tmpk)
+slop_wall = master.make_wall(numpy.array([(w-500, h-5), (w-20, 20)]))
+
 
 # AMOEBA
 # human input
 circle_res = 10
 circle_radius = 100.
-muscle_period = 25.
+muscle_period = .4
 muscle_amp = 80.
-reinforcement = 2
+reinforcement = 3
+musclek = 1000
+treadk = musclek
 
 # setup
 circle_res *= 2
@@ -49,7 +54,7 @@ for i in range(0,circle_res):
 for r in range(1,reinforcement+1):
 	for i in range(0,circle_res):
 		length = numpy.linalg.norm(circle[i].pos - circle[i-r].pos)
-		master.make_spring(circle[i], circle[i-r], float(length), .2)
+		master.make_spring(circle[i], circle[i-r], float(length), treadk)
 
 # muscle generator
 muscle_count = circle_res/2
@@ -57,20 +62,9 @@ muscles = []
 muscle_length = circle_radius*2
 #muscle_length = numpy.linalg.norm(circle[i].pos - circle[i-4].pos) # should be at least close
 for i in range(0,muscle_count):
-	muscles.append( master.make_spring(circle[i], circle[i-muscle_count], circle_radius*2, .2) )
+	muscles.append( master.make_spring(circle[i], circle[i-muscle_count], circle_radius*2, musclek) )
 
-
-frame = -1
-while True:
-	frame += 1
-#	print "\n"
-	
-	for m in range(0,muscle_count):
-		muscles[m].targl = muscle_amp * numpy.sin( (frame/muscle_period) + (m*2*math.pi/muscle_count) )
-		muscles[m].targl += muscle_length
-	
-	master.update()
-	
+def render():
 	# Graphics
 	screen.fill((255, 255, 255))
 	
@@ -87,6 +81,28 @@ while True:
 		pd.line(screen, (0, 0, 0), drawwalls[i][0], drawwalls[i][1], 2)
 	
 	pygame.display.flip()
+
+timestep = time.time()
+last_render = 0.
+frame = -1
+while True:
+	frame += 1
+#	print "\n"
+	
+	timestep = time.time() - timestep
+	for m in range(0,muscle_count):
+		muscles[m].targl = muscle_amp * numpy.sin( (master.simtime/muscle_period) + (m*2*math.pi/muscle_count) )
+		muscles[m].targl += muscle_length
+	master.update(1./200)
+	timestep = time.time()
+	
+	# render fps frames per second
+	since_render = time.time() - last_render
+	fps = 60.
+	dectime = time.time() - int(time.time())
+	if since_render >= 1/fps:
+		render()
+		last_render = time.time()
 	
 	# remember the timestep :/
-#	time.sleep(.1)
+#	time.sleep(1./1000)

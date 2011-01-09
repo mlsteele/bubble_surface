@@ -11,6 +11,7 @@ class c_master:
 		self.gravity_glob = gravity_glob
 		self.ground = ground
 		self.slip = slip
+		self.simtime = 0.
 	
 	def make_node(self, i_mass, i_pos, i_vel=numpy.zeros(2)):
 		newnode = c_node(self, i_mass, i_pos, i_vel)
@@ -31,7 +32,7 @@ class c_master:
 		self.bucket.append(i_obj)
 		self.bucklen = len(self.bucket)
 	
-	def update(self):
+	def update(self, timestep):
 		# update springs
 		for i in range(0,self.bucklen):
 			if isinstance(self.bucket[i], c_spring):
@@ -42,8 +43,8 @@ class c_master:
 			if isinstance(self.bucket[i], c_node):
 				self.bucket[i].vel *= self.friction
 				self.bucket[i].accel += self.gravity_glob
-				self.bucket[i].update()
-				# ground collision
+				self.bucket[i].update(timestep)
+				# hard collisions
 				if (self.ground):
 					if (self.bucket[i].pos[1] >= self.ground):
 						self.bucket[i].pos[1] = self.ground
@@ -51,6 +52,7 @@ class c_master:
 				for w in range(0,self.bucklen):
 					if isinstance(self.bucket[w], c_wall):
 						self.bucket[w].act(self.bucket[i])
+		self.simtime += timestep
 	
 	def list_nodes(self):
 		list = []
@@ -86,11 +88,11 @@ class c_node:
 	def push(self, force):
 		self.accel += force/self.mass
 	
-	def update(self):
+	def update(self, timestep):
 		self.oldpos = numpy.array(self.pos)
 		
-		self.vel += self.accel
-		self.pos += self.vel
+		self.vel += self.accel * timestep
+		self.pos += self.vel * timestep
 		
 		self.accel = numpy.zeros(2)
 
@@ -114,13 +116,8 @@ class c_wall:
 	def __init__(self, i_master, i_line):
 		self.master = i_master
 		self.line = i_line
-		self.stunned = []
 	
 	def act(self, obj):
-		for i in range(0,len(self.stunned)):
-			if obj == self.stunned[i]:
-				self.stunned.remove(obj)
-				return
 		x1 = obj.oldpos[0]
 		y1 = obj.oldpos[1]
 		x2 = obj.pos[0]
@@ -140,11 +137,9 @@ class c_wall:
 		xi = - (a1-a2)/(b1-b2)
 		yi = a1+b1*xi
 		
-		if (x1-xi)*(xi-x2) >= 0:
-			if (u1-xi)*(xi-u2) >= 0:
-				if (y1-yi)*(yi-y2) >= 0:
-					if (v1-yi)*(yi-v2) >= 0:
-						self.stunned.append(obj)
-						self.stunned.append(obj)
-						obj.accel += -2*obj.vel
+		if ((x1-xi)*(xi-x2) >= 0) & ((u1-xi)*(xi-u2) >= 0) & ((y1-yi)*(yi-y2) >= 0) & ((v1-yi)*(yi-v2) >= 0):
+			pass
+		else:
+			return
 		
+		print "intersection"
