@@ -53,8 +53,8 @@ class c_node:
 	def __init__(self, i_master, i_mass, i_pos, i_vel):
 		# note: not integer resistant
 		self.master = i_master
-		self.pos = i_pos
-		self.vel = i_vel
+		self.pos = numpy.array(i_pos)
+		self.vel = numpy.array(i_vel)
 		self.accel = numpy.zeros(2)
 		self.mass = i_mass
 	
@@ -75,7 +75,7 @@ class c_spring:
 		self.springk = float(i_springk)
 	
 	def update(self):
-		diffv = self.mb.pos - self.ma.pos
+		diffv = numpy.array(self.mb.pos - self.ma.pos)
 		length = numpy.linalg.norm(diffv)
 		forcea = -1*self.springk*(self.targl - length) * (diffv / length)
 		forceb = -1*forcea
