@@ -11,35 +11,45 @@ h = 500
 screen = pygame.display.set_mode((w, h))
 pd = pygame.draw
 
-master = cake.c_master(i_friction=.92)
+master = cake.c_master(friction=.92, gravity_glob=0.)
 
 # test cases
 na = master.make_node(1.0, numpy.array([20., 30.]), i_vel=numpy.array([0.01, 0.]))
 nb = master.make_node(1.0, numpy.array([80., 200.]))
 thaspring = master.make_spring(na, nb, 90., .02)
 
-# circle of circle_res
+# AMOEBA
+# human input
 circle_res = 4
+circle_radius = 100.
+muscle_period = 20.
+muscle_amp = 20.
+
+# setup
 circle_res *= 2
-circle_radius = 100
 circle = []
-#unit circle generation
+
+# unit circle generation
 for i in range(0,circle_res):
 	posx = numpy.cos(i*2.0*math.pi/circle_res)
 	posy = numpy.sin(i*2.0*math.pi/circle_res)
 	circle.append(master.make_node(1.0, numpy.array([posx, posy])))
-#mass transform
+
+# mass transform
 for i in range(0,circle_res):
 	circle[i].pos *= 100
 	circle[i].pos += numpy.array([w/2, h/2])
-#ring spring generator
+
+# ring spring generator
 for i in range(0,circle_res):
 	length = numpy.linalg.norm(circle[i].pos - circle[i-1].pos)
 	master.make_spring(circle[i], circle[i-1], float(length), .02)
-#muscle generator
+
+# muscle generator
 muscle_count = circle_res/2
 muscles = []
-muscle_length = numpy.linalg.norm(circle[i].pos - circle[i-4].pos)
+muscle_length = circle_radius*2
+#muscle_length = numpy.linalg.norm(circle[i].pos - circle[i-4].pos) # should be at least close
 for i in range(0,muscle_count):
 	muscles.append( master.make_spring(circle[i], circle[i-muscle_count], circle_radius*2, .02) )
 
@@ -49,8 +59,9 @@ while True:
 	frame += 1
 #	print "\n"
 	
-#	for i in range(0,muscle_count):
-#		
+	for m in range(0,muscle_count):
+		muscles[m].targl = muscle_amp * numpy.sin( (frame/muscle_period) + (m*2*math.pi/muscle_count) )
+		muscles[m].targl += muscle_length
 	
 	master.update()
 	
@@ -68,4 +79,4 @@ while True:
 	pygame.display.flip()
 	
 	# remember the timestep :/
-	time.sleep(.1)
+#	time.sleep(.1)

@@ -3,11 +3,12 @@ import math
 import time
 
 class c_master:
-	def __init__(self, i_friction=1):
+	def __init__(self, friction=1., gravity_glob=0.):
 		self.bucket = []
 		self.bucklen = 0
 		
-		self.friction = i_friction
+		self.friction = friction
+		self.gravity_glob = gravity_glob
 	
 	def make_node(self, i_mass, i_pos, i_vel=numpy.zeros(2)):
 		newnode = c_node(self, i_mass, i_pos, i_vel)
