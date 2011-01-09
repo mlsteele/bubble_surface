@@ -11,7 +11,7 @@ h = 500
 screen = pygame.display.set_mode((w, h))
 pd = pygame.draw
 
-master = cake.c_master(friction=.92, gravity_glob=numpy.array([0, .2]), ground=(h-10))
+master = cake.c_master(friction=.92, gravity_glob=numpy.array([0, .2]), ground=(h-10), ground_friction=.2)
 #ground_wall = master.make_wall(numpy.array([(0, h-5), (w, h-5)]))
 
 # test cases
@@ -21,10 +21,10 @@ thaspring = master.make_spring(na, nb, 90., .02)
 
 # AMOEBA
 # human input
-circle_res = 4
+circle_res = 8
 circle_radius = 100.
-muscle_period = 20.
-muscle_amp = 40.
+muscle_period = 30.
+muscle_amp = 80.
 
 # setup
 circle_res *= 2
@@ -44,7 +44,7 @@ for i in range(0,circle_res):
 # ring spring generator
 for i in range(0,circle_res):
 	length = numpy.linalg.norm(circle[i].pos - circle[i-1].pos)
-	master.make_spring(circle[i], circle[i-1], float(length), .9)
+	master.make_spring(circle[i], circle[i-1], float(length), .2)
 
 # muscle generator
 muscle_count = circle_res/2
@@ -52,7 +52,7 @@ muscles = []
 muscle_length = circle_radius*2
 #muscle_length = numpy.linalg.norm(circle[i].pos - circle[i-4].pos) # should be at least close
 for i in range(0,muscle_count):
-	muscles.append( master.make_spring(circle[i], circle[i-muscle_count], circle_radius*2, .9) )
+	muscles.append( master.make_spring(circle[i], circle[i-muscle_count], circle_radius*2, .2) )
 
 
 frame = -1
