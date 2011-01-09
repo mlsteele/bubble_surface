@@ -3,14 +3,14 @@ import math
 import time
 
 class c_master:
-	def __init__(self, friction=1., gravity_glob=numpy.zeros(2), ground=False, ground_friction=1):
+	def __init__(self, friction=1., gravity_glob=numpy.zeros(2), ground=False, slip=1):
 		self.bucket = []
 		self.bucklen = 0
 		
 		self.friction = friction
 		self.gravity_glob = gravity_glob
 		self.ground = ground
-		self.ground_friction = ground_friction
+		self.slip = slip
 	
 	def make_node(self, i_mass, i_pos, i_vel=numpy.zeros(2)):
 		newnode = c_node(self, i_mass, i_pos, i_vel)
@@ -40,16 +40,17 @@ class c_master:
 		# update nodes
 		for i in range(0,self.bucklen):
 			if isinstance(self.bucket[i], c_node):
-				for w in range(0,self.bucklen):
-					if isinstance(self.bucket[w], c_wall):
-						self.bucket[w].act(self.bucket[i])
 				self.bucket[i].vel *= self.friction
 				self.bucket[i].accel += self.gravity_glob
 				self.bucket[i].update()
+				# ground collision
 				if (self.ground):
 					if (self.bucket[i].pos[1] >= self.ground):
 						self.bucket[i].pos[1] = self.ground
-						self.bucket[i].vel[0] *= self.ground_friction
+						self.bucket[i].vel[0] *= self.slip
+				for w in range(0,self.bucklen):
+					if isinstance(self.bucket[w], c_wall):
+						self.bucket[w].act(self.bucket[i])
 	
 	def list_nodes(self):
 		list = []

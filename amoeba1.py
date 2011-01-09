@@ -11,7 +11,7 @@ h = 250
 screen = pygame.display.set_mode((w, h))
 pd = pygame.draw
 
-master = cake.c_master(friction=.92, gravity_glob=numpy.array([0, .4]), ground=(h-10), ground_friction=.2)
+master = cake.c_master(friction=.92, gravity_glob=numpy.array([0, .4]), ground=(h-10), slip=.2)
 #ground_wall = master.make_wall(numpy.array([(0, h-5), (w, h-5)]))
 
 # test cases
@@ -24,11 +24,11 @@ master.make_spring(nb, nc, 90., .2)
 
 # AMOEBA
 # human input
-circle_res = 8
+circle_res = 10
 circle_radius = 100.
-muscle_period = 30.
+muscle_period = 25.
 muscle_amp = 80.
-reinforcement = 3
+reinforcement = 2
 
 # setup
 circle_res *= 2
