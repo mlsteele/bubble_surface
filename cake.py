@@ -34,6 +34,20 @@ class c_master:
 			if isinstance(self.bucket[i], c_node):
 				self.bucket[i].update()
 				self.bucket[i].vel *= self.friction
+	
+	def list_nodes(self):
+		list = []
+		for i in range(0,self.bucklen):
+			if isinstance(self.bucket[i], c_node):
+				list.append(self.bucket[i].pos)
+		return list
+	
+	def list_springs(self):
+		list = []
+		for i in range(0,self.bucklen):
+			if isinstance(self.bucket[i], c_spring):
+				list.append([self.bucket[i].ma.pos, self.bucket[i].mb.pos])
+		return list
 
 class c_node:
 	def __init__(self, i_master, i_mass, i_pos, i_vel):
