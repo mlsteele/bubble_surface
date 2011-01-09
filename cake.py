@@ -110,8 +110,10 @@ class c_wall:
 		self.stunned = []
 	
 	def act(self, obj):
-#		if obj in stunned:
-#			break
+		for i in range(0,len(self.stunned)):
+			if obj == self.stunned[i]:
+				self.stunned.remove(obj)
+				return
 		x1 = obj.oldpos[0]
 		y1 = obj.oldpos[1]
 		x2 = obj.pos[0]
@@ -135,6 +137,7 @@ class c_wall:
 			if (u1-xi)*(xi-u2) >= 0:
 				if (y1-yi)*(yi-y2) >= 0:
 					if (v1-yi)*(yi-v2) >= 0:
-#						stunned.append(obj)
+						self.stunned.append(obj)
+						self.stunned.append(obj)
 						obj.accel += -2*obj.vel
-				
+		
