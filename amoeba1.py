@@ -12,6 +12,7 @@ screen = pygame.display.set_mode((w, h))
 pd = pygame.draw
 
 master = cake.c_master(friction=.92, gravity_glob=numpy.array([0, 1]))
+ground = master.make_wall(numpy.array([(0, h-5), (w, h-5)]))
 
 # test cases
 na = master.make_node(1.0, numpy.array([20., 30.]), i_vel=numpy.array([0.01, 0.]))
@@ -76,7 +77,11 @@ while True:
 	for i in range(0,len(drawnodes)):
 		pd.circle(screen, (0, 0, 0), drawnodes[i], 3)
 	
+	drawwalls = master.list_walls()
+	for i in range(0,len(drawwalls)):
+		pd.line(screen, (0, 0, 0), drawwalls[i][0], drawwalls[i][1], 2)
+	
 	pygame.display.flip()
 	
 	# remember the timestep :/
-#	time.sleep(.1)
+	time.sleep(.1)
