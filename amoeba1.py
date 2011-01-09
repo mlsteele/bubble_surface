@@ -15,16 +15,20 @@ master = cake.c_master(friction=.92, gravity_glob=numpy.array([0, .4]), ground=(
 #ground_wall = master.make_wall(numpy.array([(0, h-5), (w, h-5)]))
 
 # test cases
-na = master.make_node(1.0, numpy.array([20., 30.]), i_vel=numpy.array([0.01, 0.]))
-nb = master.make_node(1.0, numpy.array([80., 200.]))
-thaspring = master.make_spring(na, nb, 90., .02)
+na = master.make_node(1.0, numpy.array([w-40., 30.]), i_vel=numpy.array([0.01, 0.]))
+nb = master.make_node(1.0, numpy.array([w-200., 200.]))
+nc = master.make_node(1.0, numpy.array([w-120., 130.]))
+master.make_spring(na, nb, 90., .2)
+master.make_spring(na, nc, 90., .2)
+master.make_spring(nb, nc, 90., .2)
 
 # AMOEBA
 # human input
-circle_res = 3
+circle_res = 8
 circle_radius = 100.
 muscle_period = 30.
 muscle_amp = 80.
+reinforcement = 3
 
 # setup
 circle_res *= 2
@@ -42,9 +46,10 @@ for i in range(0,circle_res):
 	circle[i].pos += numpy.array([circle_radius+10, h/2])
 
 # ring spring generator
-for i in range(0,circle_res):
-	length = numpy.linalg.norm(circle[i].pos - circle[i-1].pos)
-	master.make_spring(circle[i], circle[i-1], float(length), .2)
+for r in range(1,reinforcement+1):
+	for i in range(0,circle_res):
+		length = numpy.linalg.norm(circle[i].pos - circle[i-r].pos)
+		master.make_spring(circle[i], circle[i-r], float(length), .2)
 
 # muscle generator
 muscle_count = circle_res/2
