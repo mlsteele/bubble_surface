@@ -11,7 +11,7 @@ h = 500
 screen = pygame.display.set_mode((w, h))
 pd = pygame.draw
 
-master = cake.c_master(friction=.92, gravity_glob=0.)
+master = cake.c_master(friction=.92, gravity_glob=numpy.array([0, 1]))
 
 # test cases
 na = master.make_node(1.0, numpy.array([20., 30.]), i_vel=numpy.array([0.01, 0.]))

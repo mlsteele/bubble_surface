@@ -3,7 +3,7 @@ import math
 import time
 
 class c_master:
-	def __init__(self, friction=1., gravity_glob=0.):
+	def __init__(self, friction=1., gravity_glob=numpy.zeros(2)):
 		self.bucket = []
 		self.bucklen = 0
 		
@@ -35,6 +35,7 @@ class c_master:
 			if isinstance(self.bucket[i], c_node):
 				self.bucket[i].update()
 				self.bucket[i].vel *= self.friction
+				self.bucket[i].accel += self.gravity_glob
 	
 	def list_nodes(self):
 		list = []
