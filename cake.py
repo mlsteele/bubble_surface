@@ -74,6 +74,13 @@ class c_master:
 			if isinstance(self.bucket[i], c_wall):
 				list.append(self.bucket[i].line)
 		return list
+	
+	def list_paths(self):
+		list = []
+		for i in range(0,self.bucklen):
+			if isinstance(self.bucket[i], c_node):
+				list.append([self.bucket[i].pos, self.bucket[i].oldpos])
+		return list
 
 class c_node:
 	def __init__(self, i_master, i_mass, i_pos, i_vel):
@@ -113,33 +120,44 @@ class c_spring:
 		self.mb.push(forceb)
 
 class c_wall:
-	def __init__(self, i_master, i_line):
+	def __init__(self, i_master, i_line, i_slip=False):
 		self.master = i_master
 		self.line = i_line
+		if i_slip:
+			self.slip = i_slip
+		else:
+			self.slip = self.master.slip
 	
 	def act(self, obj):
+		# lines A-B, C-D
+		A = obj.oldpos
 		x1 = obj.oldpos[0]
 		y1 = obj.oldpos[1]
+		
+		B = obj.pos
 		x2 = obj.pos[0]
 		y2 = obj.pos[1]
 		
+		C = self.line[0,0:2]
 		u1 = self.line[0,0]
 		v1 = self.line[0,1]
+		
+		D = self.line[1,0:2]
 		u2 = self.line[1,0]
 		v2 = self.line[1,1]
 		
-		b1 = (y2-y1)/(x2-x1)
-		b2 = (v2-v1)/(u2-u1)
+		def ccw(A,B,C):
+			return (C[1]-A[1])*(B[0]-A[0]) > (B[1]-A[1])*(C[0]-A[0])
+
+		def intersect(A,B,C,D):
+			return ccw(A,C,D) != ccw(B,C,D) and ccw(A,B,C) != ccw(A,B,D)
 		
-		a1 = y1-b1*x1
-		a2 = v1-b2*u1
-		
-		xi = - (a1-a2)/(b1-b2)
-		yi = a1+b1*xi
-		
-		if ((x1-xi)*(xi-x2) >= 0) & ((u1-xi)*(xi-u2) >= 0) & ((y1-yi)*(yi-y2) >= 0) & ((v1-yi)*(yi-v2) >= 0):
-			pass
-		else:
+		xsect_bool = intersect(A,B,C,D)
+		if xsect_bool != True:
 			return
 		
-		print "intersection"
+		obj.pos = numpy.array(obj.oldpos)
+		parallel = (self.line[1]-self.line[0])
+		parallel = parallel / numpy.linalg.norm(parallel)
+		obj.vel = numpy.dot(obj.vel,parallel)
+		obj.vel *= self.slip

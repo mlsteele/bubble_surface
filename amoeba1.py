@@ -11,18 +11,20 @@ h = 250
 screen = pygame.display.set_mode((w, h))
 pd = pygame.draw
 
-master = cake.c_master(friction=.92, gravity_glob=numpy.array([0, 5000]), ground=(h-10), slip=.2)
-#ground_wall = master.make_wall(numpy.array([(0, h-5), (w, h-5)]))
+master = cake.c_master(friction=.92, gravity_glob=numpy.array([0, 5000]), ground=False, slip=.6)
 
 # physics sandbox
-na = master.make_node(1.0, numpy.array([w-40., 30.]), i_vel=numpy.array([0.01, 0.]))
+na = master.make_node(1.0, numpy.array([w-100., 10.]), i_vel=numpy.array([0.01, 0.]))
 nb = master.make_node(1.0, numpy.array([w-200., 200.]))
 nc = master.make_node(1.0, numpy.array([w-120., 130.]))
 tmpk = 1000
-master.make_spring(na, nb, 90., tmpk)
-master.make_spring(na, nc, 90., tmpk)
+controlme = master.make_spring(na, nb, 90., tmpk)
+controlme2 = master.make_spring(na, nc, 90., tmpk)
 master.make_spring(nb, nc, 90., tmpk)
-slop_wall = master.make_wall(numpy.array([(w-500, h-5), (w-20, 20)]))
+slope_wall = master.make_wall(numpy.array([(200, h-5), (400, h-50)]))
+master.make_wall(numpy.array([(400, h-50), (500, h)]))
+master.make_wall(numpy.array([(w-100, 5), (w-10, h)]))
+ground_wall = master.make_wall(numpy.array([(-200, h-20), (w+200, h-10)]))
 
 
 # AMOEBA
@@ -33,7 +35,7 @@ muscle_period = .4
 muscle_amp = 80.
 reinforcement = 3
 musclek = 1000
-treadk = musclek
+treadk = 1000
 
 # setup
 circle_res *= 2
@@ -80,6 +82,10 @@ def render():
 	for i in range(0,len(drawwalls)):
 		pd.line(screen, (0, 0, 0), drawwalls[i][0], drawwalls[i][1], 2)
 	
+#	drawpaths = master.list_paths()
+#	for i in range(0,len(drawpaths)):
+#		pd.line(screen, (255, 0, 0), drawpaths[i][0], drawpaths[i][1], 1)
+	
 	pygame.display.flip()
 
 timestep = time.time()
@@ -93,7 +99,7 @@ while True:
 	for m in range(0,muscle_count):
 		muscles[m].targl = muscle_amp * numpy.sin( (master.simtime/muscle_period) + (m*2*math.pi/muscle_count) )
 		muscles[m].targl += muscle_length
-	master.update(1./200)
+	master.update(timestep)
 	timestep = time.time()
 	
 	# render fps frames per second
