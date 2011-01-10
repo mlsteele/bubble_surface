@@ -1,9 +1,11 @@
 import math
 import numpy
 import random
-import cake
 import time
 import pygame
+
+import cake
+import amoeba
 
 # Graphics initiation
 w = 1200
@@ -12,6 +14,32 @@ screen = pygame.display.set_mode((w, h))
 pd = pygame.draw
 
 master = cake.c_master(friction=.92, gravity_glob=numpy.array([0, 5000]), ground=False, slip=.6)
+
+amoebas = []
+amoeba1 = amoeba.amoeba(master, numpy.array([200, h/2]))
+amoeba1.circle_res = 8
+amoeba1.circle_radius = 50.
+amoeba1.node_mass = 1.0
+amoeba1.treading = 3
+amoeba1.treadk = 1000.
+amoeba1.musclek = 1000.
+amoeba1.muscle_period = .2
+amoeba1.muscle_amp = 50.
+amoeba2 = amoeba.amoeba(master, numpy.array([200, h/2]))
+amoeba2.circle_res = 10
+amoeba2.circle_radius = 50.
+amoeba2.node_mass = .2
+amoeba2.treading = 1
+amoeba2.treadk = 1000.
+amoeba2.musclek = 500.
+amoeba2.muscle_period = .3
+amoeba2.muscle_amp = 40.
+
+amoebas.append(amoeba1)
+amoeba1.assemble()
+#amoebas.append(amoeba2)
+#amoeba2.assemble()
+
 
 # physics sandbox
 na = master.make_node(1.0, numpy.array([w-100., 10.]), i_vel=numpy.array([0.01, 0.]))
@@ -25,46 +53,6 @@ slope_wall = master.make_wall(numpy.array([(200, h-5), (400, h-50)]))
 master.make_wall(numpy.array([(400, h-50), (500, h)]))
 master.make_wall(numpy.array([(w-100, 5), (w-10, h)]))
 ground_wall = master.make_wall(numpy.array([(-200, h-20), (w+200, h-10)]))
-
-
-# AMOEBA
-# human input
-circle_res = 10
-circle_radius = 100.
-muscle_period = .4
-muscle_amp = 80.
-reinforcement = 3
-musclek = 1000
-treadk = 1000
-
-# setup
-circle_res *= 2
-circle = []
-
-# unit circle generation
-for i in range(0,circle_res):
-	posx = numpy.cos(i*2.0*math.pi/circle_res)
-	posy = numpy.sin(i*2.0*math.pi/circle_res)
-	circle.append(master.make_node(1.0, numpy.array([posx, posy])))
-
-# mass transform
-for i in range(0,circle_res):
-	circle[i].pos *= 100
-	circle[i].pos += numpy.array([circle_radius+10, h/2])
-
-# ring spring generator
-for r in range(1,reinforcement+1):
-	for i in range(0,circle_res):
-		length = numpy.linalg.norm(circle[i].pos - circle[i-r].pos)
-		master.make_spring(circle[i], circle[i-r], float(length), treadk)
-
-# muscle generator
-muscle_count = circle_res/2
-muscles = []
-muscle_length = circle_radius*2
-#muscle_length = numpy.linalg.norm(circle[i].pos - circle[i-4].pos) # should be at least close
-for i in range(0,muscle_count):
-	muscles.append( master.make_spring(circle[i], circle[i-muscle_count], circle_radius*2, musclek) )
 
 def render():
 	# Graphics
@@ -96,10 +84,9 @@ while True:
 #	print "\n"
 	
 	timestep = time.time() - timestep
-	for m in range(0,muscle_count):
-		muscles[m].targl = muscle_amp * numpy.sin( (master.simtime/muscle_period) + (m*2*math.pi/muscle_count) )
-		muscles[m].targl += muscle_length
-	master.update(timestep)
+	for a in range(0,len(amoebas)):
+		amoebas[a].update(master.simtime)
+	master.update(timestep*1.2)
 	timestep = time.time()
 	
 	# render fps frames per second

@@ -23,8 +23,8 @@ class c_master:
 		self.register_obj(newspring)
 		return newspring
 	
-	def make_wall(self, i_line):
-		newwall = c_wall(self, i_line)
+	def make_wall(self, i_line, slip=False):
+		newwall = c_wall(self, i_line, slip)
 		self.register_obj(newwall)
 		return newwall
 	
@@ -120,7 +120,7 @@ class c_spring:
 		self.mb.push(forceb)
 
 class c_wall:
-	def __init__(self, i_master, i_line, i_slip=False):
+	def __init__(self, i_master, i_line, i_slip):
 		self.master = i_master
 		self.line = i_line
 		if i_slip:
@@ -159,5 +159,5 @@ class c_wall:
 		obj.pos = numpy.array(obj.oldpos)
 		parallel = (self.line[1]-self.line[0])
 		parallel = parallel / numpy.linalg.norm(parallel)
-		obj.vel = numpy.dot(obj.vel,parallel)
-		obj.vel *= self.slip
+#		obj.vel = numpy.dot(obj.vel,parallel)
+#		obj.vel *= self.slip
