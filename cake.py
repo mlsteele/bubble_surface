@@ -3,13 +3,12 @@ import math
 import time
 
 class c_master:
-	def __init__(self, friction=1., gravity_glob=numpy.zeros(2), ground=False, slip=1):
+	def __init__(self, friction=1., gravity_glob=numpy.zeros(2), slip=1):
 		self.bucket = []
 		self.bucklen = 0
 		
 		self.friction = friction
 		self.gravity_glob = gravity_glob
-		self.ground = ground
 		self.slip = slip
 		self.simtime = 0.
 	
@@ -32,7 +31,10 @@ class c_master:
 		self.bucket.append(i_obj)
 		self.bucklen = len(self.bucket)
 	
-	def update(self, timestep):
+	def update(self, timestep, max=False):
+		if timestep >= max:
+			print "jumped\ttimestep was supposed to be " +str(timestep) +"\ttimestep set to " + str(max)
+			timestep = max
 		# update springs
 		for i in range(0,self.bucklen):
 			if isinstance(self.bucket[i], c_spring):
@@ -41,17 +43,13 @@ class c_master:
 		# update nodes
 		for i in range(0,self.bucklen):
 			if isinstance(self.bucket[i], c_node):
-				self.bucket[i].vel *= self.friction
+				self.bucket[i].vel *= self.friction**timestep
 				self.bucket[i].accel += self.gravity_glob
 				self.bucket[i].update(timestep)
-				# hard collisions
-				if (self.ground):
-					if (self.bucket[i].pos[1] >= self.ground):
-						self.bucket[i].pos[1] = self.ground
-						self.bucket[i].vel[0] *= self.slip
 				for w in range(0,self.bucklen):
 					if isinstance(self.bucket[w], c_wall):
-						self.bucket[w].act(self.bucket[i])
+						if self.bucket[w].act(self.bucket[i]): 
+							self.bucket[i].update(timestep)
 		self.simtime += timestep
 	
 	def list_nodes(self):
@@ -79,7 +77,7 @@ class c_master:
 		list = []
 		for i in range(0,self.bucklen):
 			if isinstance(self.bucket[i], c_node):
-				list.append([self.bucket[i].pos, self.bucket[i].oldpos])
+				list.append([self.bucket[i].goal, self.bucket[i].pos])
 		return list
 
 class c_node:
@@ -102,6 +100,13 @@ class c_node:
 		self.pos += self.vel * timestep
 		
 		self.accel = numpy.zeros(2)
+		#
+		#self.pos += .5 * self.accel * (timestep**2)
+		#self.pos += self.vel * timestep
+		#self.vel += self.accel * timestep
+		#
+		#self.accel = numpy.zeros(2)
+		
 
 class c_spring:
 	def __init__(self, i_master, i_ma, i_mb, i_targl, i_springk):
@@ -127,16 +132,20 @@ class c_wall:
 			self.slip = i_slip
 		else:
 			self.slip = self.master.slip
+		self.parallel = (self.line[1]-self.line[0])
+		self.parallel = self.parallel / numpy.linalg.norm(self.parallel)
 	
 	def act(self, obj):
+		# all this thanks to http://www.geog.ubc.ca/courses/klink/gis.notes/ncgia/u32.html#SEC32.3.5
+		
 		# lines A-B, C-D
 		A = obj.oldpos
-		x1 = obj.oldpos[0]
-		y1 = obj.oldpos[1]
+		x1 = A[0]
+		y1 = A[1]
 		
 		B = obj.pos
-		x2 = obj.pos[0]
-		y2 = obj.pos[1]
+		x2 = B[0]
+		y2 = B[1]
 		
 		C = self.line[0,0:2]
 		u1 = self.line[0,0]
@@ -154,10 +163,8 @@ class c_wall:
 		
 		xsect_bool = intersect(A,B,C,D)
 		if xsect_bool != True:
-			return
-		
+			return False
 		obj.pos = numpy.array(obj.oldpos)
-		parallel = (self.line[1]-self.line[0])
-		parallel = parallel / numpy.linalg.norm(parallel)
-#		obj.vel = numpy.dot(obj.vel,parallel)
-#		obj.vel *= self.slip
+		obj.vel = numpy.dot(obj.vel,self.parallel)*self.parallel
+		obj.vel *= self.slip
+		return True
