@@ -7,23 +7,32 @@ class c_master:
 		self.bucket = []
 		self.bucklen = 0
 		
-		self.friction = friction
-		self.gravity_glob = gravity_glob
-		self.slip = slip
+		self.friction = float(friction)
+		self.gravity_glob = self.float_array(gravity_glob)
+		self.slip = float(slip)
 		self.simtime = 0.
 	
 	def make_node(self, i_mass, i_pos, i_vel=numpy.zeros(2)):
+		i_mass = float(i_mass)
+		i_pos = self.float_array(i_pos)
+		i_vel = self.float_array(i_vel)
 		newnode = c_node(self, i_mass, i_pos, i_vel)
 		self.register_obj(newnode)
 		return newnode
 	
-	def make_spring(self, i_ma, i_mb, i_targl, i_springk):
-		newspring = c_spring(self, i_ma, i_mb, i_targl, i_springk)
+	def make_spring(self, i_ma, i_mb, i_targl, i_springk, damp=1.):
+		newspring = c_spring(self, i_ma, i_mb, float(i_targl), float(i_springk), float(damp))
 		self.register_obj(newspring)
 		return newspring
 	
 	def make_wall(self, i_line, slip=False):
-		newwall = c_wall(self, i_line, slip)
+		if map(len, i_line) != [2,2]:
+			print "Line not created! Check array length."
+			return False
+		formed_line = numpy.zeros( (2,2) )
+		formed_line[0] = self.float_array(i_line[0])
+		formed_line[1] = self.float_array(i_line[1])
+		newwall = c_wall(self, formed_line, slip)
 		self.register_obj(newwall)
 		return newwall
 	
@@ -34,22 +43,25 @@ class c_master:
 	def update(self, timestep, max=False):
 		if timestep >= max:
 			print "jumped\ttimestep was supposed to be " +str(timestep) +"\ttimestep set to " + str(max)
-			timestep = max
+			timestep = float(max)
+		
 		# update springs
 		for i in range(0,self.bucklen):
 			if isinstance(self.bucket[i], c_spring):
-				self.bucket[i].update()
+				self.bucket[i].update(timestep)
 		
-		# update nodes
+		# update nodes w/ walls
 		for i in range(0,self.bucklen):
 			if isinstance(self.bucket[i], c_node):
 				self.bucket[i].vel *= self.friction**timestep
 				self.bucket[i].accel += self.gravity_glob
 				self.bucket[i].update(timestep)
+				# postmortem wall check
 				for w in range(0,self.bucklen):
 					if isinstance(self.bucket[w], c_wall):
 						if self.bucket[w].act(self.bucket[i]): 
 							self.bucket[i].update(timestep)
+		
 		self.simtime += timestep
 	
 	def list_nodes(self):
@@ -79,6 +91,12 @@ class c_master:
 			if isinstance(self.bucket[i], c_node):
 				list.append([self.bucket[i].goal, self.bucket[i].pos])
 		return list
+	
+	def float_array(self, ia):
+		oa = numpy.zeros(len(ia))
+		for i in range(0,len(ia)):
+			oa[i] = ia[i]
+		return oa
 
 class c_node:
 	def __init__(self, i_master, i_mass, i_pos, i_vel):
@@ -99,30 +117,33 @@ class c_node:
 		self.vel += self.accel * timestep
 		self.pos += self.vel * timestep
 		
-		self.accel = numpy.zeros(2)
-		#
 		#self.pos += .5 * self.accel * (timestep**2)
 		#self.pos += self.vel * timestep
 		#self.vel += self.accel * timestep
-		#
-		#self.accel = numpy.zeros(2)
+		
+		self.accel = numpy.zeros(2)
 		
 
 class c_spring:
-	def __init__(self, i_master, i_ma, i_mb, i_targl, i_springk):
+	def __init__(self, i_master, i_ma, i_mb, i_targl, i_springk, damp):
 		self.master = i_master
 		self.ma = i_ma
 		self.mb = i_mb
 		self.targl = float(i_targl)
 		self.springk = float(i_springk)
+		self.damp = damp
 	
-	def update(self):
+	def update(self, timestep):
 		diffv = numpy.array(self.mb.pos - self.ma.pos)
 		length = numpy.linalg.norm(diffv)
 		forcea = -1*self.springk*(self.targl - length) * (diffv / length)
 		forceb = -1*forcea
+		
 		self.ma.push(forcea)
 		self.mb.push(forceb)
+		
+#		self.ma.vel *= self.damp**timestep
+#		self.mb.vel *= self.damp**timestep
 
 class c_wall:
 	def __init__(self, i_master, i_line, i_slip):

@@ -13,19 +13,19 @@ h = 250
 screen = pygame.display.set_mode((w, h))
 pd = pygame.draw
 
-master = cake.c_master(friction=.3, gravity_glob=numpy.array([0., 150.]), slip=.3)
+master = cake.c_master(friction=.3, gravity_glob=[0., 150.], slip=.3)
 
 amoebas = []
-amoeba1 = amoeba.amoeba(master, numpy.array([200, h/2]))
+amoeba1 = amoeba.amoeba(master, [200, h/2])
 amoeba1.circle_res = 7
 amoeba1.circle_radius = 50.
 amoeba1.node_mass = 1.0
 amoeba1.treading = 3
-amoeba1.treadk = 100.
-amoeba1.musclek = 100.
-amoeba1.muscle_period = .5
+amoeba1.treadk = 50.
+amoeba1.musclek = 50.
+amoeba1.muscle_period = .4
 amoeba1.muscle_amp = 60.
-amoeba2 = amoeba.amoeba(master, numpy.array([200, h/2]))
+amoeba2 = amoeba.amoeba(master, [200, h/2])
 amoeba2.circle_res = 10
 amoeba2.circle_radius = 50.
 amoeba2.node_mass = .2
@@ -34,7 +34,7 @@ amoeba2.treadk = 1000.
 amoeba2.musclek = 500.
 amoeba2.muscle_period = .3
 amoeba2.muscle_amp = 40.
-amoeba3 = amoeba.amoeba(master, numpy.array([200, h/2]))
+amoeba3 = amoeba.amoeba(master, [200, h/2])
 amoeba3.circle_res = 4
 amoeba3.circle_radius = 50.
 amoeba3.node_mass = 1.
@@ -54,30 +54,31 @@ amoeba1.assemble()
 
 
 # physics sandbox
-na = master.make_node(1.0, numpy.array([w-100., 10.]), i_vel=numpy.array([0.01, 0.]))
-nb = master.make_node(1.0, numpy.array([w-200., 200.]))
-nc = master.make_node(1.0, numpy.array([w-120., 130.]))
+na = master.make_node(1.0, [w-100., 10.], i_vel=[0.01, 0.])
+nb = master.make_node(1.0, [w-200., 200.])
+nc = master.make_node(1.0, [w-120., 130.])
 tmpk = 30.
 controlme = master.make_spring(na, nb, 90., tmpk)
 controlme2 = master.make_spring(na, nc, 90., tmpk)
 master.make_spring(nb, nc, 90., tmpk)
-slope_wall = master.make_wall(numpy.array([(200, h-5), (400, h-50)]))
-master.make_wall(numpy.array([(400, h-50), (500, h)]))
+slope_wall = master.make_wall([(200, h-5), (400, h-50)])
+master.make_wall([(400, h-50), (500, h)])
 #master.make_node(1.0, numpy.array([430,190]))
 #master.make_node(1.0, numpy.array([300,190]))
 #master.make_node(1.0, numpy.array([450,190]))
-master.make_wall(numpy.array([(w-10, h),(w-100, 5)]), 1.)
-ground_wall = master.make_wall(numpy.array([(-200, h-20), (w+200, h-10)]))
+master.make_wall([(w-10, h),(w-100, 5)], 1.)
+ground_wall = master.make_wall([(-200, h-20), (w+200, h-10)])
 
 # test slip spring
-master.make_wall(numpy.array([((w/2)-40.,50.),((w/2)+40.,30.)]), slip=1.)
-tna = master.make_node(1.0, numpy.array([w/2.,20.]))
-tnb = master.make_node(1.0, numpy.array([(w/2)+2.,50.]))
-master.make_spring(tna, tnb, 31., 100.)
+master.make_wall([((w/2)-100.,50.),((w/2)+40.,30.)], slip=1.)
+tna = master.make_node(1.0, [w/2.,20.])
+tnb = master.make_node(1.0, [(w/2)+2.,60.])
+master.make_spring(tna, tnb, 41., 100., damp=.1)
+independent_node = master.make_node(1.0, [w/2+10.,20.])
 
 # test slip spring 2
-#master.make_wall(numpy.array([(500.,200.),(550.,170.)]), slip=1.)
-#master.make_wall(numpy.array([(550.,170.),(600.,200.)]), slip=1.)
+#master.make_wall([(500.,200.),(550.,170.)], slip=1.)
+#master.make_wall([(550.,170.),(600.,200.)], slip=1.)
 #master.make_node(1.0, numpy.array([525., 170.]))
 #master.make_node(1.0, numpy.array([575., 170.]))
 #master.make_node(1.0, numpy.array([580., 170.]))
@@ -106,6 +107,7 @@ def render():
 
 timestep = time.time()
 time_last = time.time()
+time_start = time.time()
 last_render = 0.
 frame = -1
 while True:
@@ -118,6 +120,7 @@ while True:
 		amoebas[a].update(master.simtime)
 	master.update(timestep, max=.05)
 #	print "simtime\t" + str(master.simtime)
+#	print "time offset\t" + str((time.time() - time_start) - master.simtime)
 #	print "frame\t" + str(frame)
 #	print "step\t" + str(timestep)
 	
