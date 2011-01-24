@@ -16,7 +16,8 @@ pd = pygame.draw
 master = cake.c_master(friction=.92, gravity_glob=[0., 150.], slip=.3)
 
 amoebas = []
-amoeba1 = amoeba.amoeba(master, [150, h-80])
+
+amoeba1 = amoeba.amoeba(master, [100, h-80])
 amoeba1.circle_res = 7
 amoeba1.circle_radius = 50.
 amoeba1.node_mass = 1.0
@@ -27,17 +28,19 @@ amoeba1.musclek = 100
 amoeba1.muscle_period = .2
 amoeba1.muscle_amp = 50.
 amoeba1.muscle_damp = .5
-amoeba2 = amoeba.amoeba(master, [200, h/2])
+
+amoeba2 = amoeba.amoeba(master, [100, h-80])
 amoeba2.circle_res = 10
 amoeba2.circle_radius = 50.
-amoeba2.node_mass = 1.
+amoeba2.node_mass = 1.0
 amoeba2.treading = 1
-amoeba2.treadk = 100.
-amoeba2.tread_damp = .01
-amoeba2.musclek = 500.
-amoeba2.muscle_period = .3
-amoeba2.muscle_amp = 40.
-amoeba2.muscle_damp = amoeba2.tread_damp
+amoeba2.treadk = 200.
+amoeba2.tread_damp = .5
+amoeba2.musclek = 400
+amoeba2.muscle_period = .2
+amoeba2.muscle_amp = 60.
+amoeba2.muscle_damp = .9
+
 amoeba3 = amoeba.amoeba(master, [150, h-70])
 amoeba3.circle_res = 7
 amoeba3.circle_radius = 20.
@@ -50,13 +53,44 @@ amoeba3.muscle_period = .1
 amoeba3.muscle_amp = 30.
 amoeba3.muscle_damp = amoeba3.tread_damp
 
+amoeba4 = amoeba.amoeba(master, [100, h-80])
+amoeba4.circle_res = 4
+amoeba4.circle_radius = 50.
+amoeba4.node_mass = 1.0
+amoeba4.treading = 2
+amoeba4.treadk = 200.
+amoeba4.tread_damp = .5
+amoeba4.musclek = 400
+amoeba4.muscle_period = .2
+amoeba4.muscle_amp = 60.
+amoeba4.muscle_damp = .9
+
+amoeba5 = amoeba.amoeba(master, [100, h-80])
+amoeba5.circle_res = 5
+amoeba5.circle_radius = 50.
+amoeba5.node_mass = 1.0
+amoeba5.treading = 2
+amoeba5.treadk = 200.
+amoeba5.tread_damp = .5
+amoeba5.musclek = 400
+amoeba5.muscle_period = .18
+amoeba5.muscle_amp = 90.
+amoeba5.muscle_damp = .9
+
 #amoebas.append(amoeba1)
 #amoeba1.assemble()
-#amoebas.append(amoeba2)
-#amoeba2.assemble()
-amoebas.append(amoeba3)
-amoeba3.assemble()
 
+amoebas.append(amoeba2)
+amoeba2.assemble()
+
+#amoebas.append(amoeba3)
+#amoeba3.assemble()
+
+#amoebas.append(amoeba4)
+#amoeba4.assemble()
+
+#amoebas.append(amoeba5)
+#amoeba5.assemble()
 
 # physics sandbox
 na = master.make_node(1.0, [w-100., 10.], i_vel=[0.01, 0.])
@@ -119,6 +153,7 @@ def render(lagged):
 	
 	pygame.display.flip()
 
+timescale = 1
 timestep = time.time()
 time_last = time.time()
 time_start = time.time()
@@ -133,7 +168,7 @@ while True:
 	time_last = time.time()
 	for a in range(0,len(amoebas)):
 		amoebas[a].update(master.simtime)
-	if master.update(time.time()-time_start, max=.035) == False:
+	if master.update((time.time()-time_start)/timescale, max=.035) == False:
 		lagged = True
 #	print "simtime\t" + str(master.simtime)
 #	print "time offset\t" + str((time.time() - time_start) - master.simtime)

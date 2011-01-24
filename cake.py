@@ -48,7 +48,7 @@ class c_master:
 		lagged = False
 		if timestep >= max:
 			self.lag += (timestep-float(max))
-#			print "JUMPED!\tproposed step: " +str(timestep) +"\ttimestep set to " + str(max) + "\tlag is now: " + str(self.lag)
+			print "JUMPED!\tproposed step: " +str(timestep) +"\ttimestep set to " + str(max) + "\tlag is now: " + str(self.lag)
 			timestep = float(max)
 			lagged = True
 		
