@@ -37,7 +37,7 @@ amoeba2.treading = 1
 amoeba2.treadk = 200.
 amoeba2.tread_damp = .5
 amoeba2.musclek = 400
-amoeba2.muscle_period = .2*2*math.pi
+amoeba2.muscle_period = 1.2
 amoeba2.muscle_amp = 60.
 amoeba2.muscle_damp = .9
 
@@ -101,13 +101,15 @@ tmpd = 1.
 controlme = master.make_spring(na, nb, 90., tmpk, damp=tmpd)
 controlme2 = master.make_spring(na, nc, 90., tmpk, damp=tmpd)
 master.make_spring(nb, nc, 90., tmpk)
-slope_wall = master.make_wall([(200, h-5), (400, h-50)])
-master.make_wall([(400, h-50), (500, h)])
 #master.make_node(1.0, numpy.array([430,190]))
 #master.make_node(1.0, numpy.array([300,190]))
 #master.make_node(1.0, numpy.array([450,190]))
 master.make_wall([(w-10, h),(w-100, 5)], 1.)
 ground_wall = master.make_wall([(-200, h-20), (w+200, h-10)])
+
+# terrain
+slope_wall = master.make_wall([(200, h-5), (400, h-50)])
+master.make_wall([(400, h-50), (500, h)])
 
 # test slip spring
 master.make_wall([((w/2)-100.,50.),((w/2)+40.,30.)], slip=1.)
