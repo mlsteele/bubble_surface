@@ -20,6 +20,8 @@ class amoeba:
 		self.muscle_period = .4
 		self.muscle_amp = 100.
 		self.muscle_damp = 0.
+		
+		self.phase = 0.
 	
 	def assemble(self):
 		# setup
@@ -54,7 +56,23 @@ class amoeba:
 		for i in range(0,self.muscle_count):
 			self.muscles.append( self.master.make_spring(self.circle[i], self.circle[i-self.muscle_count], self.circle_radius*2, self.musclek, damp=self.muscle_damp) )
 	
-	def update(self, simtime):
+	def update(self, timestep):
+		gofactor = 1.
+		
+		# how are my feet feeling?
+		touch = 0.
+		for i in range(0,self.circle_res):
+			if self.circle[i].contact:
+				touch += 1.
+		touch = touch/self.circle_res
+#		gofactor *= touch
+		
+		self.phase += timestep*gofactor
+		self.phase = self.phase % self.muscle_period
+		
+		# run muscles
 		for m in range(0,self.muscle_count):
-			self.muscles[m].targl = self.muscle_amp * numpy.sin( (simtime/self.muscle_period) + (m*2*math.pi/self.muscle_count) )
+			self.muscles[m].targl = self.muscle_amp * numpy.sin( (self.phase/self.muscle_period*2*math.pi) + (float(m)/self.muscle_count*2*math.pi) )
 			self.muscles[m].targl += self.muscle_length
+		
+		

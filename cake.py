@@ -12,6 +12,7 @@ class c_master:
 		self.slip = float(slip)
 		self.simtime = 0.
 		self.lag = 0.
+		self.timestep = 0.
 	
 	def make_node(self, i_mass, i_pos, i_vel=numpy.zeros(2)):
 		i_mass = float(i_mass)
@@ -44,37 +45,37 @@ class c_master:
 		self.bucklen = len(self.bucket)
 	
 	def update(self, nowtime, max=False):
-		timestep = nowtime - (self.simtime + self.lag)
+		self.timestep = nowtime - (self.simtime + self.lag)
 		lagged = False
-		if timestep >= max:
-			self.lag += (timestep-float(max))
-			print "JUMPED!\tproposed step: " +str(timestep) +"\ttimestep set to " + str(max) + "\tlag is now: " + str(self.lag)
-			timestep = float(max)
+		if self.timestep >= max:
+			self.lag += (self.timestep-float(max))
+			print "JUMPED!\tproposed step: " +str(self.timestep) +"\ttimestep set to " + str(max) + "\tlag is now: " + str(self.lag)
+			self.timestep = float(max)
 			lagged = True
 		
 		# update springs
 		for i in range(0,self.bucklen):
 			if isinstance(self.bucket[i], c_spring):
-				self.bucket[i].update(timestep)
+				self.bucket[i].update(self.timestep)
 		
 		# update nodes w/ walls
 		for i in range(0,self.bucklen):
 			if isinstance(self.bucket[i], c_node):
-				self.bucket[i].vel *= self.friction**timestep
+				self.bucket[i].vel *= self.friction**self.timestep
 				self.bucket[i].accel += self.gravity_glob
-				self.bucket[i].update(timestep)
+				self.bucket[i].update(self.timestep)
 				# postmortem wall check
 				for w in range(0,self.bucklen):
 					if isinstance(self.bucket[w], c_wall):
 						if self.bucket[w].act(self.bucket[i]): 
-							self.bucket[i].update(timestep, wall=True)
+							self.bucket[i].update(self.timestep, wall=True)
 		
 		# update simulation time
-		self.simtime += timestep
+		self.simtime += self.timestep
 		if lagged:
 			return False
 		else:
-			return timestep
+			return self.timestep
 	
 	def list_nodes(self):
 		list = []
@@ -119,13 +120,16 @@ class c_node:
 		self.vel = numpy.array(i_vel)
 		self.accel = numpy.zeros(2)
 		self.mass = i_mass
+		self.contact = False
 	
 	def push(self, force):
 		self.accel += force/self.mass
 	
 	def update(self, timestep, wall=False):
+		self.contact = True
 		if wall != True:
 			self.oldpos = numpy.array(self.pos)
+			self.contact = False
 		
 		self.vel += self.accel * timestep
 		self.pos += self.vel * timestep

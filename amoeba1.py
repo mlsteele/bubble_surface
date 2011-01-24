@@ -25,7 +25,7 @@ amoeba1.treading = 3
 amoeba1.treadk = 100.
 amoeba1.tread_damp = .5
 amoeba1.musclek = 100
-amoeba1.muscle_period = .2
+amoeba1.muscle_period = .2*2*math.pi
 amoeba1.muscle_amp = 50.
 amoeba1.muscle_damp = .5
 
@@ -37,7 +37,7 @@ amoeba2.treading = 1
 amoeba2.treadk = 200.
 amoeba2.tread_damp = .5
 amoeba2.musclek = 400
-amoeba2.muscle_period = .2
+amoeba2.muscle_period = .2*2*math.pi
 amoeba2.muscle_amp = 60.
 amoeba2.muscle_damp = .9
 
@@ -61,7 +61,7 @@ amoeba4.treading = 2
 amoeba4.treadk = 200.
 amoeba4.tread_damp = .5
 amoeba4.musclek = 400
-amoeba4.muscle_period = .2
+amoeba4.muscle_period = .2*2*math.pi
 amoeba4.muscle_amp = 60.
 amoeba4.muscle_damp = .9
 
@@ -73,7 +73,7 @@ amoeba5.treading = 2
 amoeba5.treadk = 200.
 amoeba5.tread_damp = .5
 amoeba5.musclek = 400
-amoeba5.muscle_period = .18
+amoeba5.muscle_period = .18*2*math.pi
 amoeba5.muscle_amp = 90.
 amoeba5.muscle_damp = .9
 
@@ -166,10 +166,10 @@ while True:
 	
 	timestep = time.time() - time_last
 	time_last = time.time()
-	for a in range(0,len(amoebas)):
-		amoebas[a].update(master.simtime)
 	if master.update((time.time()-time_start)/timescale, max=.035) == False:
 		lagged = True
+	for a in range(0,len(amoebas)):
+		amoebas[a].update(master.timestep)
 #	print "simtime\t" + str(master.simtime)
 #	print "time offset\t" + str((time.time() - time_start) - master.simtime)
 #	print "frame\t" + str(frame)
