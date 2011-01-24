@@ -11,6 +11,7 @@ class c_master:
 		self.gravity_glob = self.float_array(gravity_glob)
 		self.slip = float(slip)
 		self.simtime = 0.
+		self.lag = 0.
 	
 	def make_node(self, i_mass, i_pos, i_vel=numpy.zeros(2)):
 		i_mass = float(i_mass)
@@ -20,8 +21,10 @@ class c_master:
 		self.register_obj(newnode)
 		return newnode
 	
-	def make_spring(self, i_ma, i_mb, i_targl, i_springk, damp=1.):
-		newspring = c_spring(self, i_ma, i_mb, float(i_targl), float(i_springk), float(damp))
+	def make_spring(self, ma, mb, targl, i_springk, damp=0.):
+		if targl == True:
+			targl = numpy.abs(numpy.linalg.norm(ma.pos - mb.pos))
+		newspring = c_spring(self, ma, mb, float(targl), float(i_springk), float(damp))
 		self.register_obj(newspring)
 		return newspring
 	
@@ -40,10 +43,14 @@ class c_master:
 		self.bucket.append(i_obj)
 		self.bucklen = len(self.bucket)
 	
-	def update(self, timestep, max=False):
+	def update(self, nowtime, max=False):
+		timestep = nowtime - (self.simtime + self.lag)
+		lagged = False
 		if timestep >= max:
-			print "jumped\ttimestep was supposed to be " +str(timestep) +"\ttimestep set to " + str(max)
+			self.lag += (timestep-float(max))
+#			print "JUMPED!\tproposed step: " +str(timestep) +"\ttimestep set to " + str(max) + "\tlag is now: " + str(self.lag)
 			timestep = float(max)
+			lagged = True
 		
 		# update springs
 		for i in range(0,self.bucklen):
@@ -60,9 +67,14 @@ class c_master:
 				for w in range(0,self.bucklen):
 					if isinstance(self.bucket[w], c_wall):
 						if self.bucket[w].act(self.bucket[i]): 
-							self.bucket[i].update(timestep)
+							self.bucket[i].update(timestep, wall=True)
 		
+		# update simulation time
 		self.simtime += timestep
+		if lagged:
+			return False
+		else:
+			return timestep
 	
 	def list_nodes(self):
 		list = []
@@ -111,8 +123,9 @@ class c_node:
 	def push(self, force):
 		self.accel += force/self.mass
 	
-	def update(self, timestep):
-		self.oldpos = numpy.array(self.pos)
+	def update(self, timestep, wall=False):
+		if wall != True:
+			self.oldpos = numpy.array(self.pos)
 		
 		self.vel += self.accel * timestep
 		self.pos += self.vel * timestep
@@ -142,8 +155,15 @@ class c_spring:
 		self.ma.push(forcea)
 		self.mb.push(forceb)
 		
-#		self.ma.vel *= self.damp**timestep
-#		self.mb.vel *= self.damp**timestep
+		# Damping
+		parallel = self.mb.pos - self.ma.pos
+		parallel = parallel/numpy.linalg.norm(parallel)
+		veldif = self.mb.vel - self.ma.vel
+		veldif = numpy.dot(veldif, parallel)*parallel
+		veldif *= self.damp
+		
+		self.ma.vel += veldif*self.damp
+		self.mb.vel -= veldif*self.damp
 
 class c_wall:
 	def __init__(self, i_master, i_line, i_slip):

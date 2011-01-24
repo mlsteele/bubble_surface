@@ -14,10 +14,12 @@ class amoeba:
 		self.node_mass = 1.0
 		self.treading = 3
 		self.treadk = 1000.
+		self.tread_damp = 0.
 		
 		self.musclek = 1000.
 		self.muscle_period = .4
 		self.muscle_amp = 100.
+		self.muscle_damp = 0.
 	
 	def assemble(self):
 		# setup
@@ -42,7 +44,7 @@ class amoeba:
 		for r in range(1,self.treading+1):
 			for i in range(0,self.circle_res):
 				length = numpy.linalg.norm(self.circle[i].pos - self.circle[i-r].pos)
-				self.tread.append( self.master.make_spring(self.circle[i], self.circle[i-r], float(length), self.treadk) )
+				self.tread.append( self.master.make_spring(self.circle[i], self.circle[i-r], float(length), self.treadk, damp=self.tread_damp) )
 		
 		# muscle generator
 		self.muscle_count = self.circle_res/2
@@ -50,7 +52,7 @@ class amoeba:
 		self.muscle_length = self.circle_radius*2
 		#muscle_length = numpy.linalg.norm(circle[i].pos - circle[i-4].pos) # should be at least close
 		for i in range(0,self.muscle_count):
-			self.muscles.append( self.master.make_spring(self.circle[i], self.circle[i-self.muscle_count], self.circle_radius*2, self.musclek) )
+			self.muscles.append( self.master.make_spring(self.circle[i], self.circle[i-self.muscle_count], self.circle_radius*2, self.musclek, damp=self.muscle_damp) )
 	
 	def update(self, simtime):
 		for m in range(0,self.muscle_count):

@@ -13,44 +13,49 @@ h = 250
 screen = pygame.display.set_mode((w, h))
 pd = pygame.draw
 
-master = cake.c_master(friction=.3, gravity_glob=[0., 150.], slip=.3)
+master = cake.c_master(friction=.92, gravity_glob=[0., 150.], slip=.3)
 
 amoebas = []
-amoeba1 = amoeba.amoeba(master, [200, h/2])
+amoeba1 = amoeba.amoeba(master, [150, h-80])
 amoeba1.circle_res = 7
 amoeba1.circle_radius = 50.
 amoeba1.node_mass = 1.0
 amoeba1.treading = 3
-amoeba1.treadk = 50.
-amoeba1.musclek = 50.
-amoeba1.muscle_period = .4
-amoeba1.muscle_amp = 60.
+amoeba1.treadk = 100.
+amoeba1.tread_damp = .5
+amoeba1.musclek = 100
+amoeba1.muscle_period = .2
+amoeba1.muscle_amp = 50.
+amoeba1.muscle_damp = .5
 amoeba2 = amoeba.amoeba(master, [200, h/2])
 amoeba2.circle_res = 10
 amoeba2.circle_radius = 50.
-amoeba2.node_mass = .2
+amoeba2.node_mass = 1.
 amoeba2.treading = 1
-amoeba2.treadk = 1000.
+amoeba2.treadk = 100.
+amoeba2.tread_damp = .01
 amoeba2.musclek = 500.
 amoeba2.muscle_period = .3
 amoeba2.muscle_amp = 40.
-amoeba3 = amoeba.amoeba(master, [200, h/2])
-amoeba3.circle_res = 4
-amoeba3.circle_radius = 50.
-amoeba3.node_mass = 1.
-amoeba3.treading = 2
-amoeba3.treadk = 1000.
-amoeba3.musclek = 500.
-amoeba3.muscle_period = 30.
-amoeba3.muscle_amp = 100.
+amoeba2.muscle_damp = amoeba2.tread_damp
+amoeba3 = amoeba.amoeba(master, [150, h-70])
+amoeba3.circle_res = 7
+amoeba3.circle_radius = 20.
+amoeba3.node_mass = 1.0
+amoeba3.treading = 4
+amoeba3.treadk = 100.
+amoeba3.tread_damp = .9
+amoeba3.musclek = 400.
+amoeba3.muscle_period = .1
+amoeba3.muscle_amp = 30.
+amoeba3.muscle_damp = amoeba3.tread_damp
 
-
-amoebas.append(amoeba1)
-amoeba1.assemble()
+#amoebas.append(amoeba1)
+#amoeba1.assemble()
 #amoebas.append(amoeba2)
 #amoeba2.assemble()
-#amoebas.append(amoeba3)
-#amoeba3.assemble()
+amoebas.append(amoeba3)
+amoeba3.assemble()
 
 
 # physics sandbox
@@ -58,8 +63,9 @@ na = master.make_node(1.0, [w-100., 10.], i_vel=[0.01, 0.])
 nb = master.make_node(1.0, [w-200., 200.])
 nc = master.make_node(1.0, [w-120., 130.])
 tmpk = 30.
-controlme = master.make_spring(na, nb, 90., tmpk)
-controlme2 = master.make_spring(na, nc, 90., tmpk)
+tmpd = 1.
+controlme = master.make_spring(na, nb, 90., tmpk, damp=tmpd)
+controlme2 = master.make_spring(na, nc, 90., tmpk, damp=tmpd)
 master.make_spring(nb, nc, 90., tmpk)
 slope_wall = master.make_wall([(200, h-5), (400, h-50)])
 master.make_wall([(400, h-50), (500, h)])
@@ -73,7 +79,10 @@ ground_wall = master.make_wall([(-200, h-20), (w+200, h-10)])
 master.make_wall([((w/2)-100.,50.),((w/2)+40.,30.)], slip=1.)
 tna = master.make_node(1.0, [w/2.,20.])
 tnb = master.make_node(1.0, [(w/2)+2.,60.])
-master.make_spring(tna, tnb, 41., 100., damp=.1)
+master.make_spring(tna, tnb, 41., 50., damp=1.)
+ttna = master.make_node(1.0, [w/2+20.,15.])
+ttnb = master.make_node(1.0, [(w/2+20)+2.,55.])
+master.make_spring(ttna, ttnb, 41., 50., damp=0.)
 independent_node = master.make_node(1.0, [w/2+10.,20.])
 
 # test slip spring 2
@@ -83,9 +92,14 @@ independent_node = master.make_node(1.0, [w/2+10.,20.])
 #master.make_node(1.0, numpy.array([575., 170.]))
 #master.make_node(1.0, numpy.array([580., 170.]))
 
-def render():
+# test damp spring
+master.make_spring(master.make_node(10, [w/2, h-20]), master.make_node(10, [w/2, h-80]), 120, 100., damp=1)
+
+def render(lagged):
 	# Graphics
 	screen.fill((255, 255, 255))
+	if lagged:
+		pd.circle(screen, (255, 0, 0), (w/2, h/2), 30)
 	
 	drawsprings = master.list_springs()
 	for i in range(0,len(drawsprings)):
@@ -109,6 +123,7 @@ timestep = time.time()
 time_last = time.time()
 time_start = time.time()
 last_render = 0.
+lagged = False
 frame = -1
 while True:
 	frame += 1
@@ -118,7 +133,8 @@ while True:
 	time_last = time.time()
 	for a in range(0,len(amoebas)):
 		amoebas[a].update(master.simtime)
-	master.update(timestep, max=.05)
+	if master.update(time.time()-time_start, max=.035) == False:
+		lagged = True
 #	print "simtime\t" + str(master.simtime)
 #	print "time offset\t" + str((time.time() - time_start) - master.simtime)
 #	print "frame\t" + str(frame)
@@ -126,10 +142,11 @@ while True:
 	
 	# render fps frames per second
 	since_render = time.time() - last_render
-	fps = 25.
+	fps = 60.
 	dectime = time.time() - int(time.time())
 	if since_render >= 1/fps:
-		render()
+		render(lagged)
+		lagged = False
 		last_render = time.time()
 	
 	# remember the timestep :/
