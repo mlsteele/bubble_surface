@@ -74,9 +74,9 @@ class amoeba:
 #			self.gofactor = max(self.gofactor, 0.)
 		
 		if touch >= 1.:
-			self.gofactor += .2*timestep
+			self.gofactor += .05*timestep
 		else:
-			self.gofactor -= 1.*timestep
+			self.gofactor -= .1*timestep
 		self.gofactor = min(self.gofactor, 1.)
 		self.gofactor = max(self.gofactor, 0.)
 		

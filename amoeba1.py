@@ -44,12 +44,12 @@ amoeba2.muscle_damp = .9
 amoeba3 = amoeba.amoeba(master, [150, h-70])
 amoeba3.circle_res = 7
 amoeba3.circle_radius = 20.
-amoeba3.node_mass = 1.0
-amoeba3.treading = 4
+amoeba3.node_mass = 1.
+amoeba3.treading = 2
 amoeba3.treadk = 100.
 amoeba3.tread_damp = .9
 amoeba3.musclek = 400.
-amoeba3.muscle_period = .1
+amoeba3.muscle_period = .05
 amoeba3.muscle_amp = 30.
 amoeba3.muscle_damp = amoeba3.tread_damp
 
@@ -80,11 +80,11 @@ amoeba5.muscle_damp = .9
 #amoebas.append(amoeba1)
 #amoeba1.assemble()
 
-amoebas.append(amoeba2)
-amoeba2.assemble()
+#amoebas.append(amoeba2)
+#amoeba2.assemble()
 
-#amoebas.append(amoeba3)
-#amoeba3.assemble()
+amoebas.append(amoeba3)
+amoeba3.assemble()
 
 #amoebas.append(amoeba4)
 #amoeba4.assemble()
@@ -168,7 +168,7 @@ while True:
 	
 	timestep = time.time() - time_last
 	time_last = time.time()
-	if master.update((time.time()-time_start)/timescale, max=.035) == False:
+	if master.update((time.time()-time_start)/timescale, max=.033) == False:
 		lagged = True
 	for a in range(0,len(amoebas)):
 		amoebas[a].update(master.timestep)
