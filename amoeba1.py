@@ -5,42 +5,56 @@ Miles Steele
 Stage for amoeba + cake testing
 """
 
-import math, random, time, pygame, sys
+import time, pygame, sys, random
+from math import pi
 import cake, amoeba
 
-def render(lagged):
+def randColorBright():
+	c = [0,0,0]
+	jump = 20
+	while (c[0] < 255-jump and c[1] < 255-jump and c[2] < 255-jump):
+		c[random.choice([0,1,2])] += jump
+	
+	return (int(c[0]), int(c[1]), int(c[2]))
+
+def render(mode, lagged):
 	# Graphics
 	screen.fill((255, 255, 255))
 	if lagged:
 		pd.circle(screen, (255, 0, 0), (w/2, h/2), 30)
 	
-	drawsprings = master.list_springs()
-	for dp1, dp2 in drawsprings:
-		dp1 = [ int(dp1[0]), int(dp1[1]) ]
-		dp2 = [ int(dp2[0]), int(dp2[1]) ]
-		pd.line(screen, (125, 125, 125), dp1, dp2, 1)
-
-#	drawnodes = master.list_nodes()
-#	for i in range(0,len(drawnodes)):
-#		dp1 = drawnodes[i]
-#		dp1 = [ int(dp1[0]), int(dp1[1]) ]
-#		pd.circle(screen, (0, 0, 0), dp1, 3)
+	if mode == 'stick':
+		drawsprings = master.list_springs()
+		for dp1, dp2 in drawsprings:
+			dp1 = [ int(dp1[0]), int(dp1[1]) ]
+			dp2 = [ int(dp2[0]), int(dp2[1]) ]
+			pd.line(screen, (125, 125, 125), dp1, dp2, 1)
+		
+		drawnodes = master.list_nodes()
+		for dp1 in drawnodes:
+			dp1 = [ int(dp1[0]), int(dp1[1]) ]
+			pd.circle(screen, (0, 0, 0), dp1, 2)
 	
+	elif mode == 'solid':
+		drawpoly = []
+		for dp in master.list_nodes():
+			dp = [ int(dp[0]), int(dp[1]) ]
+			drawpoly.append(dp)
+			
+		pd.polygon(screen, dcBright, drawpoly)
+		pd.polygon(screen, (0,0,0), drawpoly, 2)
+		
 	drawwalls = master.list_walls()
 	for dp1, dp2 in drawwalls:
 		dp1 = [ int(dp1[0]), int(dp1[1]) ]
 		dp2 = [ int(dp2[0]), int(dp2[1]) ]
 		pd.line(screen, (0, 0, 0), dp1, dp2, 2)
-	
-#	drawpaths = master.list_paths()
-#	for i in range(0,len(drawpaths)):
-#		pd.line(screen, (255, 0, 0), drawpaths[i][0], drawpaths[i][1], 1)
-	
+		
 	pygame.display.flip()
 
 def main():
 	# global variables
-	global screen, pd, master, w, h
+	global screen, pd, master, w, h, dcBright
 	
 	## Graphics Initialization
 	w = 1200
@@ -48,6 +62,8 @@ def main():
 	screen = pygame.display.set_mode((w, h))
 	pygame.display.set_caption("Amoebas")
 	pd = pygame.draw
+	drawmode = 'stick'
+	dcBright = randColorBright()
 	
 	master = cake.c_master(friction=.92, gravity_glob=[0., 150.], slip=.3)
 	
@@ -61,7 +77,7 @@ def main():
 	amoeba0.treadk = 100.
 	amoeba0.tread_damp = .5
 	amoeba0.musclek = 100
-	amoeba0.muscle_period = .2*2*math.pi
+	amoeba0.muscle_period = .2*2*pi
 	amoeba0.muscle_amp = 50.
 	amoeba0.muscle_damp = .5
 	
@@ -97,7 +113,7 @@ def main():
 	amoeba3.treadk = 200.
 	amoeba3.tread_damp = .5
 	amoeba3.musclek = 400
-	amoeba3.muscle_period = .2*2*math.pi
+	amoeba3.muscle_period = .2*2*pi
 	amoeba3.muscle_amp = 60.
 	amoeba3.muscle_damp = .9
 	
@@ -109,7 +125,7 @@ def main():
 	amoeba4.treadk = 200.
 	amoeba4.tread_damp = .5
 	amoeba4.musclek = 400
-	amoeba4.muscle_period = .18*2*math.pi
+	amoeba4.muscle_period = .18*2*pi
 	amoeba4.muscle_amp = 90.
 	amoeba4.muscle_damp = .9
 	
@@ -180,10 +196,24 @@ def main():
 			if event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_ESCAPE or event.unicode == 'q':
 					pygame.quit(); sys.exit();
+				if event.key == pygame.K_SPACE:
+					dcBright = randColorBright()
+					if drawmode == 'stick':
+						drawmode = 'solid'
+					elif drawmode == 'solid':
+						drawmode = 'stick'
+				if event.unicode in ['1', '2', '3', '4', '5', '6', '7', '8', '9']:
+					if int(event.unicode) in range(1,len(amoebas)+1):
+						dcBright = randColorBright()
+						amoebas[activeID].destroy()
+						activeID = int(event.unicode)-1
+						amoebas[activeID].assemble()
+						print "amoeba ID:\t", activeID
 			if event.type == pygame.MOUSEBUTTONDOWN:
 				amoebas[activeID].destroy()
 				activeID = (activeID + 1) % len(amoebas)
 				amoebas[activeID].assemble()
+				dcBright = randColorBright()
 				print "amoeba ID:\t", activeID
 		
 		timestep = time.time() - time_last
@@ -203,6 +233,7 @@ def main():
 			amoebas[activeID].destroy()
 			activeID = (activeID + 1) % len(amoebas)
 			amoebas[activeID].assemble()
+			dcBright = randColorBright()
 			print "amoeba ID:\t", activeID
 				
 		## Render
@@ -211,12 +242,9 @@ def main():
 		fps = 60.
 		dectime = time.time() - int(time.time())
 		if since_render >= 1/fps:
-			render(lagged)
+			render(drawmode, lagged)
 			lagged = False
 			last_render = time.time()
-		
-		# remember the timestep :/
-	#	time.sleep(1./1000)
 
 if __name__ == '__main__':
 	main()
