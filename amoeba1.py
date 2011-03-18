@@ -15,10 +15,8 @@ def render(lagged):
 		pd.circle(screen, (255, 0, 0), (w/2, h/2), 30)
 	
 	drawsprings = master.list_springs()
-	for i in range(0,len(drawsprings)):
-		dp1 = drawsprings[i][0]
+	for dp1, dp2 in drawsprings:
 		dp1 = [ int(dp1[0]), int(dp1[1]) ]
-		dp2 = drawsprings[i][1]
 		dp2 = [ int(dp2[0]), int(dp2[1]) ]
 		pd.line(screen, (125, 125, 125), dp1, dp2, 1)
 
@@ -29,10 +27,8 @@ def render(lagged):
 #		pd.circle(screen, (0, 0, 0), dp1, 3)
 	
 	drawwalls = master.list_walls()
-	for i in range(0,len(drawwalls)):
-		dp1 = drawwalls[i][0]
+	for dp1, dp2 in drawwalls:
 		dp1 = [ int(dp1[0]), int(dp1[1]) ]
-		dp2 = drawwalls[i][1]
 		dp2 = [ int(dp2[0]), int(dp2[1]) ]
 		pd.line(screen, (0, 0, 0), dp1, dp2, 2)
 	

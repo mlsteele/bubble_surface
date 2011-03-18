@@ -1,3 +1,10 @@
+"""
+Cake Physics Engine
+
+Miles Steele
+2011
+"""
+
 import numpy
 n = numpy
 import math
@@ -5,34 +12,40 @@ import time
 
 class c_master:
 	def __init__(self, friction=1., gravity_glob=numpy.zeros(2), slip=1):
-		self.bucket = []
-		self.buckLen = 0
+		s = self
 		
-		self.friction = float(friction)
-		self.gravity_glob = self.float_array(gravity_glob)
-		self.slip = float(slip)
-		self.simtime = 0.
-		self.lag = 0.
-		self.timestep = 0.
+		# Holders
+		s.nodes, s.springs, s.walls, s.bangles = [], [], [], []
+		s.nodesLen, s.springsLen, s.wallsLen, s.banglesLen = 0, 0, 0, 0
+		
+		s.friction = float(friction)
+		s.gravity_glob = s.float_array(gravity_glob)
+		s.slip = float(slip)
+		s.simtime = 0.
+		s.lag = 0.
+		s.timestep = 0.
 	
 	def make_node(self, i_mass, i_pos, i_vel=numpy.zeros(2)):
 		i_mass = float(i_mass)
 		i_pos = self.float_array(i_pos)
 		i_vel = self.float_array(i_vel)
 		newnode = c_node(self, i_mass, i_pos, i_vel)
-		self.register_obj(newnode)
+		self.nodes.append(newnode)
+		self.nodesLen += 1
 		return newnode
 	
 	def make_spring(self, ma, mb, targl, i_springk, damp=0.):
 		if targl == True:
 			targl = numpy.abs(numpy.linalg.norm(ma.pos - mb.pos))
 		newspring = c_spring(self, ma, mb, float(targl), float(i_springk), float(damp))
-		self.register_obj(newspring)
+		self.springs.append(newspring)
+		self.springsLen += 1
 		return newspring
 	
 	def make_bangle(self, na, nb, nc, tangle, power):
 		newbangle = c_bangle(self, na, nb, nc, float(tangle), float(power))
-		self.register_obj(newbangle)
+		self.bangles.append(newbangle)
+		self.banglesLen += 1
 		return newbangle
 	
 	def make_wall(self, i_line, slip=False):
@@ -43,14 +56,13 @@ class c_master:
 		formed_line[0] = self.float_array(i_line[0])
 		formed_line[1] = self.float_array(i_line[1])
 		newwall = c_wall(self, formed_line, slip)
-		self.register_obj(newwall)
+		self.walls.append(newwall)
+		self.wallsLen += 1
 		return newwall
 	
-	def register_obj(self, i_obj):
-		self.bucket.append(i_obj)
-		self.buckLen = len(self.bucket)
-	
 	def update(self, nowtime, max=False):
+		s = self
+		
 		self.timestep = nowtime - (self.simtime + self.lag)
 		lagged = False
 		if (self.timestep >= max) and (max):
@@ -60,26 +72,22 @@ class c_master:
 			lagged = True
 		
 		# update springs
-		for i in range(0,self.buckLen):
-			if isinstance(self.bucket[i], c_spring):
-				self.bucket[i].update()
+		for spring in s.springs:
+			spring.update()
 		
 		# update bangles
-		for i in range(0,self.buckLen):
-			if isinstance(self.bucket[i], c_bangle):
-				self.bucket[i].update()
+		for bangle in s.bangles:
+			bangle.update()
 		
-		# update nodes w/ walls
-		for i in range(0,self.buckLen):
-			if isinstance(self.bucket[i], c_node):
-				self.bucket[i].vel *= self.friction**self.timestep
-				self.bucket[i].accel += self.gravity_glob
-				self.bucket[i].update(self.timestep)
-				# postmortem wall check
-				for w in range(0,self.buckLen):
-					if isinstance(self.bucket[w], c_wall):
-						if self.bucket[w].act(self.bucket[i]): 
-							self.bucket[i].update(self.timestep, wall=True)
+		# update nodes w/ walls		
+		for node in s.nodes:
+			node.vel *= self.friction**self.timestep
+			node.accel += self.gravity_glob
+			node.update(self.timestep)
+			# postmortem wall check
+			for wall in s.walls:
+				if wall.act(node): 
+					node.update(self.timestep, wall=True)
 		
 		# update simulation time
 		self.simtime += self.timestep
@@ -89,32 +97,13 @@ class c_master:
 			return self.timestep
 	
 	def list_nodes(self):
-		list = []
-		for i in range(0,self.buckLen):
-			if isinstance(self.bucket[i], c_node):
-				list.append(self.bucket[i].pos)
-		return list
+		return (o.pos for o in self.nodes)
 	
 	def list_springs(self):
-		list = []
-		for i in range(0,self.buckLen):
-			if isinstance(self.bucket[i], c_spring):
-				list.append([self.bucket[i].ma.pos, self.bucket[i].mb.pos])
-		return list
+		return ( [o.ma.pos, o.mb.pos] for o in self.springs)
 	
 	def list_walls(self):
-		list = []
-		for i in range(0,self.buckLen):
-			if isinstance(self.bucket[i], c_wall):
-				list.append(self.bucket[i].line)
-		return list
-	
-	def list_paths(self):
-		list = []
-		for i in range(0,self.buckLen):
-			if isinstance(self.bucket[i], c_node):
-				list.append([self.bucket[i].goal, self.bucket[i].pos])
-		return list
+		return (o.line for o in self.walls)
 	
 	def float_array(self, ia):
 		oa = numpy.zeros(len(ia))
@@ -133,11 +122,9 @@ class c_node:
 		self.mass = i_mass
 		self.contact = False
 	
-	def push(self, force):
-		self.accel += force/self.mass
-	
 	def update(self, timestep, wall=False):
 		self.contact = True
+		
 		if wall != True:
 			self.oldpos = numpy.array(self.pos)
 			self.contact = False
@@ -171,8 +158,8 @@ class c_spring:
 		forcea = -1*self.springk*(self.targl - self.length) * (diffv / self.length)
 		forceb = -1*forcea
 		
-		self.ma.push(forcea)
-		self.mb.push(forceb)
+		self.ma.accel += forcea/self.ma.mass
+		self.mb.accel += forceb/self.mb.mass
 		
 		# Damping
 		parallel = self.mb.pos - self.ma.pos
@@ -227,9 +214,9 @@ class c_bangle:
 		
 		forcea = apushv*dangle*s.power
 		forcec = -cpushv*dangle*s.power
-		s.na.push(forcea)
-		s.nc.push(forcec)
-		s.nc.push(-1*(forcea+forcec))# equal opposite reaction
+		s.na.accel += forcea/s.na.mass
+		s.nc.accel += forcec/s.nc.mass
+		s.nb.accel += (-1*(forcea+forcec)) /s.nb.mass # equal opposite reaction
 		
 #		print 'dangle', int( dangle/n.pi*180 )
 #		print '\n'
@@ -274,7 +261,9 @@ class c_wall:
 		xsect_bool = intersect(A,B,C,D)
 		if xsect_bool != True:
 			return False
+		
 		obj.pos = numpy.array(obj.oldpos)
 		obj.vel = numpy.dot(obj.vel,self.parallel)*self.parallel
 		obj.vel *= self.slip
+		
 		return True

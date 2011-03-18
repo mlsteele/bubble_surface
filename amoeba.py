@@ -67,16 +67,16 @@ class amoeba:
 		s = self
 		
 		for node in s.circle:
-			s.master.bucket.remove(node)
-			s.master.buckLen -= 1
+			s.master.nodes.remove(node)
+			s.master.nodesLen -= 1
 		
 		for spring in s.tread:
-			s.master.bucket.remove(spring)
-			s.master.buckLen -= 1
+			s.master.springs.remove(spring)
+			s.master.springsLen -= 1
 		
 		for muscle in s.muscles:
-			s.master.bucket.remove(muscle)
-			s.master.buckLen -= 1
+			s.master.springs.remove(muscle)
+			s.master.springsLen -= 1
 	
 	def update(self, timestep):
 		self.gofactor = 1.
