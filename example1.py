@@ -12,7 +12,7 @@ frame = -1
 while True:
 	frame += 1
 	
-	master.update(1)
+	master.update(frame)
 	
 	print "\n" + str(frame)
 	print na.pos

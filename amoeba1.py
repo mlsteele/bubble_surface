@@ -1,13 +1,8 @@
-import math
-import numpy
-import random
-import time
-import pygame
+import math, random, time, pygame, sys
 
-import cake
-import amoeba
+import cake, amoeba
 
-# Graphics initiation
+# Graphics Initialization
 w = 1200
 h = 250
 screen = pygame.display.set_mode((w, h))
@@ -139,15 +134,25 @@ def render(lagged):
 	
 	drawsprings = master.list_springs()
 	for i in range(0,len(drawsprings)):
-		pd.line(screen, (125, 125, 125), drawsprings[i][0], drawsprings[i][1], 1)
+		dp1 = drawsprings[i][0]
+		dp1 = [ int(dp1[0]), int(dp1[1]) ]
+		dp2 = drawsprings[i][1]
+		dp2 = [ int(dp2[0]), int(dp2[1]) ]
+		pd.line(screen, (125, 125, 125), dp1, dp2, 1)
 
 	drawnodes = master.list_nodes()
 	for i in range(0,len(drawnodes)):
-		pd.circle(screen, (0, 0, 0), drawnodes[i], 3)
+		dp1 = drawnodes[i]
+		dp1 = [ int(dp1[0]), int(dp1[1]) ]
+		pd.circle(screen, (0, 0, 0), dp1, 3)
 	
 	drawwalls = master.list_walls()
 	for i in range(0,len(drawwalls)):
-		pd.line(screen, (0, 0, 0), drawwalls[i][0], drawwalls[i][1], 2)
+		dp1 = drawwalls[i][0]
+		dp1 = [ int(dp1[0]), int(dp1[1]) ]
+		dp2 = drawwalls[i][1]
+		dp2 = [ int(dp2[0]), int(dp2[1]) ]
+		pd.line(screen, (0, 0, 0), dp1, dp2, 2)
 	
 #	drawpaths = master.list_paths()
 #	for i in range(0,len(drawpaths)):
@@ -164,7 +169,14 @@ lagged = False
 frame = -1
 while True:
 	frame += 1
-#	print "\n"
+	
+	## Event handler
+	for event in pygame.event.get():
+		if event.type == pygame.QUIT:
+			pygame.quit(); sys.exit();
+		if event.type == pygame.KEYDOWN:
+			if event.key == pygame.K_ESCAPE or event.unicode == 'q':
+				pygame.quit(); sys.exit();
 	
 	timestep = time.time() - time_last
 	time_last = time.time()
