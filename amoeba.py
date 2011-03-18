@@ -17,7 +17,7 @@ class amoeba:
 		self.master = master
 
 		self.center_coords = center_coords
-		self.circle_res = 8
+		self.circle_res = 16
 		self.circle_radius = 100.
 		
 		self.node_mass = 1.0
@@ -34,10 +34,7 @@ class amoeba:
 		self.gofactor = 0.
 		
 	def assemble(self):
-		# setup
-		self.circle_res *= 2
-		
-		# unit circle generation
+		## unit circle generation
 		self.circle = []
 		for i in range(0,self.circle_res):
 			posx = n.cos(i*2.0*n.pi/self.circle_res)
@@ -51,20 +48,35 @@ class amoeba:
 			newnode = self.master.make_node(self.node_mass, n.array([posx, posy])) #FLAG!!!
 			self.circle.append(newnode)
 		
-		# tread generator
+		## tread generator
 		self.tread = []
 		for r in range(1,self.treading+1):
 			for i in range(0,self.circle_res):
 				length = n.linalg.norm(self.circle[i].pos - self.circle[i-r].pos)
 				self.tread.append( self.master.make_spring(self.circle[i], self.circle[i-r], float(length), self.treadk, damp=self.tread_damp) )
 		
-		# muscle generator
+		## muscle generator
 		self.muscle_count = self.circle_res/2
 		self.muscles = []
 		self.muscle_length = self.circle_radius*2
 		#muscle_length = n.linalg.norm(circle[i].pos - circle[i-4].pos) # should be at least close
 		for i in range(0,self.muscle_count):
 			self.muscles.append( self.master.make_spring(self.circle[i], self.circle[i-self.muscle_count], self.circle_radius*2, self.musclek, damp=self.muscle_damp) )
+	
+	def destroy(self):
+		s = self
+		
+		for node in s.circle:
+			s.master.bucket.remove(node)
+			s.master.buckLen -= 1
+		
+		for spring in s.tread:
+			s.master.bucket.remove(spring)
+			s.master.buckLen -= 1
+		
+		for muscle in s.muscles:
+			s.master.bucket.remove(muscle)
+			s.master.buckLen -= 1
 	
 	def update(self, timestep):
 		self.gofactor = 1.
@@ -77,11 +89,12 @@ class amoeba:
 		for m in range(0,self.muscle_count):
 			self.muscles[m].targl = self.muscle_amp * n.sin( (self.phase/self.muscle_period*2*n.pi) + (float(m)/self.muscle_count*2*n.pi) )
 			self.muscles[m].targl += self.muscle_length
-		
+	
+	## UNSTABLE
 	def updateSmart(self, timestep):
 		# how are my feet feeling?
 		touch = 0.
-		for i in range(0,self.circle_res):
+		for i in range(0, self.circle_res):
 			if self.circle[i].contact:
 				touch += 1.
 		touchr = touch/self.circle_res

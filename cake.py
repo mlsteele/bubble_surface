@@ -6,7 +6,7 @@ import time
 class c_master:
 	def __init__(self, friction=1., gravity_glob=numpy.zeros(2), slip=1):
 		self.bucket = []
-		self.bucklen = 0
+		self.buckLen = 0
 		
 		self.friction = float(friction)
 		self.gravity_glob = self.float_array(gravity_glob)
@@ -48,35 +48,35 @@ class c_master:
 	
 	def register_obj(self, i_obj):
 		self.bucket.append(i_obj)
-		self.bucklen = len(self.bucket)
+		self.buckLen = len(self.bucket)
 	
 	def update(self, nowtime, max=False):
 		self.timestep = nowtime - (self.simtime + self.lag)
 		lagged = False
 		if (self.timestep >= max) and (max):
 			self.lag += (self.timestep-float(max))
-			print "JUMPED!\tproposed step: " +str(self.timestep) +"\ttimestep set to " + str(max) + "\tlag is now: " + str(self.lag)
+#			print "JUMPED!\tproposed step: " +str(self.timestep) +"\ttimestep set to " + str(max) + "\tlag is now: " + str(self.lag)
 			self.timestep = float(max)
 			lagged = True
 		
 		# update springs
-		for i in range(0,self.bucklen):
+		for i in range(0,self.buckLen):
 			if isinstance(self.bucket[i], c_spring):
 				self.bucket[i].update()
 		
 		# update bangles
-		for i in range(0,self.bucklen):
+		for i in range(0,self.buckLen):
 			if isinstance(self.bucket[i], c_bangle):
 				self.bucket[i].update()
 		
 		# update nodes w/ walls
-		for i in range(0,self.bucklen):
+		for i in range(0,self.buckLen):
 			if isinstance(self.bucket[i], c_node):
 				self.bucket[i].vel *= self.friction**self.timestep
 				self.bucket[i].accel += self.gravity_glob
 				self.bucket[i].update(self.timestep)
 				# postmortem wall check
-				for w in range(0,self.bucklen):
+				for w in range(0,self.buckLen):
 					if isinstance(self.bucket[w], c_wall):
 						if self.bucket[w].act(self.bucket[i]): 
 							self.bucket[i].update(self.timestep, wall=True)
@@ -90,28 +90,28 @@ class c_master:
 	
 	def list_nodes(self):
 		list = []
-		for i in range(0,self.bucklen):
+		for i in range(0,self.buckLen):
 			if isinstance(self.bucket[i], c_node):
 				list.append(self.bucket[i].pos)
 		return list
 	
 	def list_springs(self):
 		list = []
-		for i in range(0,self.bucklen):
+		for i in range(0,self.buckLen):
 			if isinstance(self.bucket[i], c_spring):
 				list.append([self.bucket[i].ma.pos, self.bucket[i].mb.pos])
 		return list
 	
 	def list_walls(self):
 		list = []
-		for i in range(0,self.bucklen):
+		for i in range(0,self.buckLen):
 			if isinstance(self.bucket[i], c_wall):
 				list.append(self.bucket[i].line)
 		return list
 	
 	def list_paths(self):
 		list = []
-		for i in range(0,self.bucklen):
+		for i in range(0,self.buckLen):
 			if isinstance(self.bucket[i], c_node):
 				list.append([self.bucket[i].goal, self.bucket[i].pos])
 		return list
