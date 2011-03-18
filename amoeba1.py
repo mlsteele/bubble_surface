@@ -49,8 +49,8 @@ def main():
 	## Graphics Initialization
 	w = 1200
 	h = 250
-	pygame.display.set_caption("Amoebas")
 	screen = pygame.display.set_mode((w, h))
+	pygame.display.set_caption("Amoebas")
 	pd = pygame.draw
 	
 	master = cake.c_master(friction=.92, gravity_glob=[0., 150.], slip=.3)
@@ -126,6 +126,7 @@ def main():
 	activeID = 2
 	amoebas[activeID].assemble()
 	
+	"""
 	# physics sandbox
 	na = master.make_node(1.0, [w-100., 10.], i_vel=[0.01, 0.])
 	nb = master.make_node(1.0, [w-200., 200.])
@@ -135,15 +136,9 @@ def main():
 	controlme = master.make_spring(na, nb, 90., tmpk, damp=tmpd)
 	controlme2 = master.make_spring(na, nc, 90., tmpk, damp=tmpd)
 	master.make_spring(nb, nc, 90., tmpk)
-	#master.make_node(1.0, numpy.array([430,190]))
-	#master.make_node(1.0, numpy.array([300,190]))
-	#master.make_node(1.0, numpy.array([450,190]))
-	master.make_wall([(w-10, h),(w-100, 5)], 1.)
-	ground_wall = master.make_wall([(-200, h-20), (w+200, h-10)])
-	
-	# terrain
-	slope_wall = master.make_wall([(200, h-5), (400, h-50)])
-	master.make_wall([(400, h-50), (500, h)])
+	master.make_node(1.0, numpy.array([430,190]))
+	master.make_node(1.0, numpy.array([300,190]))
+	master.make_node(1.0, numpy.array([450,190]))
 	
 	# test slip spring
 	master.make_wall([((w/2)-100.,50.),((w/2)+40.,30.)], slip=1.)
@@ -164,6 +159,13 @@ def main():
 	
 	# test damp spring
 	master.make_spring(master.make_node(10, [w/2, h-20]), master.make_node(10, [w/2, h-80]), 120, 100., damp=1)
+	"""
+	
+	# terrain
+	ground_wall = master.make_wall([(-200, h-20), (w+200, h-10)])
+	slope_wall = master.make_wall([(200, h-5), (400, h-50)])
+	master.make_wall([(400, h-50), (500, h)])
+	master.make_wall([(w-10, h),(w-100, 5)], 1.)
 	
 	timescale = 1
 	timestep = time.time()
