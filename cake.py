@@ -1,4 +1,5 @@
 import numpy
+n = numpy
 import math
 import time
 
@@ -29,6 +30,11 @@ class c_master:
 		self.register_obj(newspring)
 		return newspring
 	
+	def make_bangle(self, na, nb, nc, tangle, power):
+		newbangle = c_bangle(self, na, nb, nc, float(tangle), float(power))
+		self.register_obj(newbangle)
+		return newbangle
+	
 	def make_wall(self, i_line, slip=False):
 		if map(len, i_line) != [2,2]:
 			print "Line not created! Check array length."
@@ -47,7 +53,7 @@ class c_master:
 	def update(self, nowtime, max=False):
 		self.timestep = nowtime - (self.simtime + self.lag)
 		lagged = False
-		if self.timestep >= max:
+		if (self.timestep >= max) and (max):
 			self.lag += (self.timestep-float(max))
 			print "JUMPED!\tproposed step: " +str(self.timestep) +"\ttimestep set to " + str(max) + "\tlag is now: " + str(self.lag)
 			self.timestep = float(max)
@@ -56,7 +62,12 @@ class c_master:
 		# update springs
 		for i in range(0,self.bucklen):
 			if isinstance(self.bucket[i], c_spring):
-				self.bucket[i].update(self.timestep)
+				self.bucket[i].update()
+		
+		# update bangles
+		for i in range(0,self.bucklen):
+			if isinstance(self.bucket[i], c_bangle):
+				self.bucket[i].update()
 		
 		# update nodes w/ walls
 		for i in range(0,self.bucklen):
@@ -139,7 +150,6 @@ class c_node:
 		#self.vel += self.accel * timestep
 		
 		self.accel = numpy.zeros(2)
-		
 
 class c_spring:
 	def __init__(self, i_master, i_ma, i_mb, i_targl, i_springk, damp):
@@ -149,11 +159,16 @@ class c_spring:
 		self.targl = float(i_targl)
 		self.springk = float(i_springk)
 		self.damp = damp
+		
+		# initialize length
+		diffv = n.array(self.mb.pos - self.ma.pos)
+		self.length = n.linalg.norm(diffv)
+
 	
-	def update(self, timestep):
+	def update(self):
 		diffv = numpy.array(self.mb.pos - self.ma.pos)
-		length = numpy.linalg.norm(diffv)
-		forcea = -1*self.springk*(self.targl - length) * (diffv / length)
+		self.length = numpy.linalg.norm(diffv)
+		forcea = -1*self.springk*(self.targl - self.length) * (diffv / self.length)
 		forceb = -1*forcea
 		
 		self.ma.push(forcea)
@@ -168,6 +183,56 @@ class c_spring:
 		
 		self.ma.vel += veldif*self.damp
 		self.mb.vel -= veldif*self.damp
+
+## UNSTABLE
+class c_bangle:
+	# pushes two outer nodes to be at a certain angle relative to a middle node
+	
+	def __init__(self, master, na, nb, nc, tangle, power):
+		s = self
+		s.master, s.na, s.nb, s.nc, s.tangle, s.power = master, na, nb, nc, tangle, power
+	
+	def update(self):
+		s = self
+		pi = n.pi
+		
+		# vectors from nb
+		va = s.na.pos - s.nb.pos
+		vc = s.nc.pos - s.nb.pos
+		
+		# lengths of vectors
+		val = n.linalg.norm(va)
+		vcl = n.linalg.norm(vc)
+		
+		# normalized
+		van = va / val
+		vcn = vc / vcl
+		
+		# push vectors (perp)
+		apushv = n.array([-van[1], van[0]])
+		cpushv = n.array([-vcn[1], vcn[0]])
+		
+		# find current angle between
+		cangle = n.arctan2(vc[0], vc[1]) - n.arctan2(va[0], va[1])
+#		print 'cangle', int( cangle/n.pi*180 )
+		
+		# find middle angle between
+		mangle = ( n.arctan2(vc[0], vc[1]) + n.arctan2(va[0], va[1]) )/2
+#		print 'mangle', int( mangle/n.pi*180 )
+		
+		# find angle difference
+		dangle = s.tangle - cangle
+		dangle %= 2*n.pi
+		dangle -= n.pi
+		
+		forcea = apushv*dangle*s.power
+		forcec = -cpushv*dangle*s.power
+		s.na.push(forcea)
+		s.nc.push(forcec)
+		s.nc.push(-1*(forcea+forcec))# equal opposite reaction
+		
+#		print 'dangle', int( dangle/n.pi*180 )
+#		print '\n'
 
 class c_wall:
 	def __init__(self, i_master, i_line, i_slip):
