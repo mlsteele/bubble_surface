@@ -31,7 +31,7 @@ class amoeba:
 		self.muscle_damp = 0.
 		
 		self.phase = 0.
-		self.gofactor = 0.
+		self.gofactor = 1.
 		
 	def assemble(self):
 		## unit circle generation
@@ -79,8 +79,6 @@ class amoeba:
 			s.master.springsLen -= 1
 	
 	def update(self, timestep):
-		self.gofactor = 1.
-		
 		# update phase
 		self.phase += timestep*self.gofactor
 		self.phase = self.phase % self.muscle_period
