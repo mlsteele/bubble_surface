@@ -61,7 +61,7 @@ def main():
 	drawmode = 'stick'
 	dcBright = randColorBright()
 	
-	master = cake.c_master(friction=.92, gravity_glob=[0., 150.], slip=.3)
+	master = cake.c_master(friction=.92, gravity_glob=[0., 350.], slip=.3)
 	
 	amoebas = []
 	
@@ -125,13 +125,26 @@ def main():
 	amoeba4.muscle_amp = 90.
 	amoeba4.muscle_damp = .9
 	
-	amoebas.append(amoeba0)
-	amoebas.append(amoeba1)
-	amoebas.append(amoeba2)
-	amoebas.append(amoeba3)
-	amoebas.append(amoeba4)
+	amoeba5 = amoeba.amoeba(master, [100, h-80])
+	amoeba5.circle_res = 16
+	amoeba5.circle_radius = 30.
+	amoeba5.node_mass = 1.0
+	amoeba5.treading = 2
+	amoeba5.treadk = 200.
+	amoeba5.tread_damp = .5
+	amoeba5.musclek = 400
+	amoeba5.muscle_period = .18*2*pi
+	amoeba5.muscle_amp = 20.
+	amoeba5.muscle_damp = .9
 	
-	activeID = 2
+#	amoebas.append(amoeba0)
+#	amoebas.append(amoeba1)
+#	amoebas.append(amoeba2)
+#	amoebas.append(amoeba3)
+#	amoebas.append(amoeba4)
+	amoebas.append(amoeba5)
+	
+	activeID = 0
 	amoebas[activeID].assemble()
 	
 	# terrain
@@ -170,13 +183,18 @@ def main():
 						amoebas[activeID].assemble()
 						print "amoeba ID:\t", activeID
 				elif event.key == pygame.K_RIGHT:
-					amoebas[activeID].gofactor = abs(amoebas[activeID].gofactor)
+					amoebas[activeID].gofactor = 1
 				elif event.key == pygame.K_LEFT:
-					amoebas[activeID].gofactor = -abs(amoebas[activeID].gofactor)
+					amoebas[activeID].gofactor = -1
 				elif event.key == pygame.K_DOWN:
 					amoebas[activeID].gofactor *= .8
 				elif event.key == pygame.K_UP:
 					amoebas[activeID].gofactor *= 1.2
+			elif event.type == pygame.KEYUP:
+				if event.key == pygame.K_RIGHT:
+					amoebas[activeID].gofactor = 0
+				elif event.key == pygame.K_LEFT:
+					amoebas[activeID].gofactor = 0
 			elif event.type == pygame.MOUSEBUTTONDOWN:
 				amoebas[activeID].destroy()
 				activeID = (activeID + 1) % len(amoebas)
