@@ -12,6 +12,15 @@ import numpy as n
 
 import cake
 
+class amoeba_control:
+	def __init__(self):
+		s = self
+		s.left = False
+		s.right = False
+		s.up = False
+		s.down = False
+		s.poof = False
+
 class amoeba:
 	def __init__(self, master, center_coords=n.zeros(2)):
 		self.master = master
@@ -31,7 +40,9 @@ class amoeba:
 		self.muscle_damp = 0.
 		
 		self.phase = 0.
-		self.gofactor = 1.
+		self.gofactor = 0.
+		
+		self.control = amoeba_control()
 		
 	def assemble(self):
 		## unit circle generation
@@ -79,14 +90,42 @@ class amoeba:
 			s.master.springsLen -= 1
 	
 	def update(self, timestep):
-		# update phase
-		self.phase += timestep*self.gofactor
-		self.phase = self.phase % self.muscle_period
+		s = self
 		
-		# run muscles
-		for m in range(0,self.muscle_count):
-			self.muscles[m].targl = self.muscle_amp * n.sin( (self.phase/self.muscle_period*2*n.pi) + (float(m)/self.muscle_count*2*n.pi) )
-			self.muscles[m].targl += self.muscle_length
+		# Find Centroid
+		centroid = n.zeros(2)
+		for node in s.circle:
+			centroid += node.pos
+		centroid /= s.circle_res
+		
+		# Contact Test
+		contact = False
+		for node in s.circle:
+			if node.contact:
+				contact = True
+		
+		# Control
+		for node in s.circle:
+			rod = node.pos - centroid
+			angle = n.arctan2(rod[1], rod[0])
+			if s.control.left:
+				if contact:
+					node.accel -= 280 * n.array([ n.cos(angle + n.pi/2), n.sin(angle + n.pi/2) ])
+				node.accel += [-60., 0.]
+			if s.control.right:
+				if contact:
+					node.accel += 280 * n.array([ n.cos(angle + n.pi/2), n.sin(angle + n.pi/2) ])
+				node.accel += [60., 0.]
+			if s.control.up:
+				node.accel += [0., -60.]
+			if s.control.down:
+				node.accel += [0., 60.]
+		
+		for muscle in s.muscles:
+			if s.control.poof:
+				muscle.springk = 400
+			else:
+				muscle.springk = 20
 	
 	## UNSTABLE
 	def updateSmart(self, timestep):

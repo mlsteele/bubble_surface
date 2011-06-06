@@ -61,7 +61,7 @@ def main():
 	drawmode = 'stick'
 	dcBright = randColorBright()
 	
-	master = cake.c_master(friction=.92, gravity_glob=[0., 350.], slip=.3)
+	master = cake.c_master(friction=.92, gravity_glob=[0., 200.], slip=.8)
 	
 	amoebas = []
 	
@@ -125,17 +125,17 @@ def main():
 	amoeba4.muscle_amp = 90.
 	amoeba4.muscle_damp = .9
 	
-	amoeba5 = amoeba.amoeba(master, [100, h-80])
+	amoeba5 = amoeba.amoeba(master, [100, h-180])
 	amoeba5.circle_res = 16
 	amoeba5.circle_radius = 30.
 	amoeba5.node_mass = 1.0
 	amoeba5.treading = 2
-	amoeba5.treadk = 200.
+	amoeba5.treadk = 600.
 	amoeba5.tread_damp = .5
-	amoeba5.musclek = 400
+	amoeba5.musclek = 40
 	amoeba5.muscle_period = .18*2*pi
 	amoeba5.muscle_amp = 20.
-	amoeba5.muscle_damp = .9
+	amoeba5.muscle_damp = .2
 	
 #	amoebas.append(amoeba0)
 #	amoebas.append(amoeba1)
@@ -169,7 +169,7 @@ def main():
 			elif event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_ESCAPE or event.unicode == 'q':
 					pygame.quit(); sys.exit();
-				elif event.key == pygame.K_SPACE:
+				elif event.key == pygame.K_v:
 					dcBright = randColorBright()
 					if drawmode == 'stick':
 						drawmode = 'solid'
@@ -183,18 +183,30 @@ def main():
 						amoebas[activeID].assemble()
 						print "amoeba ID:\t", activeID
 				elif event.key == pygame.K_RIGHT:
-					amoebas[activeID].gofactor = 1
+					amoebas[activeID].control.right = True
 				elif event.key == pygame.K_LEFT:
-					amoebas[activeID].gofactor = -1
+					amoebas[activeID].control.left = True
 				elif event.key == pygame.K_DOWN:
-					amoebas[activeID].gofactor *= .8
+					amoebas[activeID].control.down = True
 				elif event.key == pygame.K_UP:
-					amoebas[activeID].gofactor *= 1.2
+					amoebas[activeID].control.up = True
+				elif event.key == pygame.K_SPACE:
+					amoebas[activeID].control.poof = True
+#				elif event.key == pygame.K_s:
+#					master.slip = .99
 			elif event.type == pygame.KEYUP:
 				if event.key == pygame.K_RIGHT:
-					amoebas[activeID].gofactor = 0
+					amoebas[activeID].control.right = False
 				elif event.key == pygame.K_LEFT:
-					amoebas[activeID].gofactor = 0
+					amoebas[activeID].control.left = False
+				elif event.key == pygame.K_DOWN:
+					amoebas[activeID].control.down = False
+				elif event.key == pygame.K_UP:
+					amoebas[activeID].control.up = False
+				elif event.key == pygame.K_SPACE:
+					amoebas[activeID].control.poof = False
+#				elif event.key == pygame.K_s:
+#					master.slip = .8
 			elif event.type == pygame.MOUSEBUTTONDOWN:
 				amoebas[activeID].destroy()
 				activeID = (activeID + 1) % len(amoebas)
