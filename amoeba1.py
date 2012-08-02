@@ -192,8 +192,12 @@ def main():
 					amoebas[activeID].control.up = True
 				elif event.key == pygame.K_SPACE:
 					amoebas[activeID].control.poof = True
+				elif event.key == pygame.K_a:
+					amoebas[activeID].control.stick = True
 #				elif event.key == pygame.K_s:
 #					master.slip = .99
+				elif event.key == pygame.K_d:
+					amoebas[activeID].control.fat = True
 			elif event.type == pygame.KEYUP:
 				if event.key == pygame.K_RIGHT:
 					amoebas[activeID].control.right = False
@@ -205,8 +209,12 @@ def main():
 					amoebas[activeID].control.up = False
 				elif event.key == pygame.K_SPACE:
 					amoebas[activeID].control.poof = False
+				elif event.key == pygame.K_a:
+					amoebas[activeID].control.stick = False
 #				elif event.key == pygame.K_s:
 #					master.slip = .8
+				elif event.key == pygame.K_d:
+					amoebas[activeID].control.fat = False
 			elif event.type == pygame.MOUSEBUTTONDOWN:
 				amoebas[activeID].destroy()
 				activeID = (activeID + 1) % len(amoebas)

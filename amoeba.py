@@ -20,6 +20,8 @@ class amoeba_control:
 		s.up = False
 		s.down = False
 		s.poof = False
+		s.stick = False
+		s.fat = False
 
 class amoeba:
 	def __init__(self, master, center_coords=n.zeros(2)):
@@ -120,12 +122,18 @@ class amoeba:
 				node.accel += [0., -60.]
 			if s.control.down:
 				node.accel += [0., 60.]
+			if s.control.fat:
+				node.accel += [0., 300.]
+			if (s.control.stick) & (node.contact):
+				node.vel *= 0.
+				node.accel *= 0.
 		
 		for muscle in s.muscles:
+			muscle.springk = 20
 			if s.control.poof:
 				muscle.springk = 400
-			else:
-				muscle.springk = 20
+			if s.control.fat:
+				muscle.springk = 400
 	
 	## UNSTABLE
 	def updateSmart(self, timestep):
