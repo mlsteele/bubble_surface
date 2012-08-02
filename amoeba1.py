@@ -137,12 +137,12 @@ def main():
 	amoeba5.muscle_amp = 20.
 	amoeba5.muscle_damp = .2
 	
-#	amoebas.append(amoeba0)
-#	amoebas.append(amoeba1)
-#	amoebas.append(amoeba2)
-#	amoebas.append(amoeba3)
-#	amoebas.append(amoeba4)
 	amoebas.append(amoeba5)
+	amoebas.append(amoeba0)
+	amoebas.append(amoeba1)
+	amoebas.append(amoeba2)
+	amoebas.append(amoeba3)
+	amoebas.append(amoeba4)
 	
 	activeID = 0
 	amoebas[activeID].assemble()
