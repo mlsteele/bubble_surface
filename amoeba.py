@@ -167,5 +167,3 @@ class amoeba:
 		for m in range(0,self.muscle_count):
 			self.muscles[m].targl = self.muscle_amp * n.sin( (self.phase/self.muscle_period*2*n.pi) + (float(m)/self.muscle_count*2*n.pi) )
 			self.muscles[m].targl += self.muscle_length
-		
-		
