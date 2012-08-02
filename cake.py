@@ -129,6 +129,7 @@ class c_node:
 			self.oldpos = numpy.array(self.pos)
 			self.contact = False
 		
+		# Euler Integration
 		self.vel += self.accel * timestep
 		self.pos += self.vel * timestep
 		
