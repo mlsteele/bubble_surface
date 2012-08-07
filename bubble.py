@@ -18,12 +18,11 @@ class bubble:
   def __init__(s, physenv, centroid, area):
     s.physenv = physenv
     s.area = float(area)
-    s.dot_spacing = 10.0
+    s.dot_spacing = 8.0
     s.node_proto_mass = 1
 
     s._assemble(fp(centroid), area)
 
-    s._redistribute_surface_already = False
 
   def calc_perimeter(s):
     return sum(n.linalg.norm(b - a)
@@ -37,12 +36,11 @@ class bubble:
       in zip(s.nodes, s.nodes[1:] + s.nodes[0:1])))
 
   def update(s, dt):
+    print "relative scaling %s" % (s.calc_area() / s.area)
+
+    s._redistribute_surface()
     s._contract(dt)
     s._expand(dt)
-    if not s._redistribute_surface_already:
-      print s._redistribute_surface_already
-      s._redistribute_surface_already = True
-    s._redistribute_surface()
 
   def _contract(s, dt):
     force_time = 800.
@@ -52,14 +50,22 @@ class bubble:
   def _expand(s, dt):
     if s.calc_area() > s.area: return
 
-    force_time = 10000.
+    force_time = 6000.
     for (a,b,c) in zip(s.nodes, s.nodes[1:] + s.nodes[0:1], s.nodes[2:] + s.nodes[0:2]):
       parallel = a.pos - c.pos
       pre_normal = fp([-parallel[1], parallel[0]])
-      normal = pre_normal / n.linalg.norm(pre_normal)
-      b.accel += normal * force_time / b.mass * dt
+      pre_normal_length = n.linalg.norm(pre_normal)
+      if pre_normal_length != 0:
+        normal = pre_normal / pre_normal_length
+        b.accel += normal * force_time / b.mass * dt
+      else:
+        raise Exception("zero length surface segment")
 
   def _redistribute_surface(s):
+    s._redistrubte_surface_remove()
+    s._redistrubte_surface_add()
+
+  def _redistrubte_surface_add(s):
     insertions = []
 
     for (a, b) in zip(s.nodes, s.nodes[1:] + s.nodes[0:1]):
@@ -72,6 +78,20 @@ class bubble:
     for (a, nn) in insertions:
       i = (s.nodes.index(a) + 1) % len(s.nodes)
       s.nodes.insert(i, nn)
+
+  def _redistrubte_surface_remove(s):
+    removals = []
+
+    for (a, b) in zip(s.nodes, s.nodes[1:] + s.nodes[0:1]):
+      d = n.linalg.norm(a.pos - b.pos)
+      # print d / s.dot_spacing
+      if d < s.dot_spacing * 0.4:
+        removals.append(a)
+        print "removing node"
+
+    for rn in removals:
+      s.nodes.remove(rn)
+      s.physenv.remove_node(rn)
 
   def _assemble(s, centroid, area):
     rad = math.sqrt(area / n.pi)

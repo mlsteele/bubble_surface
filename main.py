@@ -22,8 +22,8 @@ def render(lagged):
    drawnodes = physenv.list_nodes()
    for dp1 in drawnodes:
       dp1 = [ int(dp1[0]), int(dp1[1]) ]
-      pd.circle(screen, (0, 0, 0), dp1, 2)
-   
+      pd.circle(screen, (100, 100, 100), dp1, 2)
+
    drawwalls = physenv.list_walls()
    for dp1, dp2 in drawwalls:
       dp1 = [ int(dp1[0]), int(dp1[1]) ]
@@ -62,7 +62,7 @@ def main():
    pd = pygame.draw
    
    ## Setup physenv
-   physenv = cake.c_master(friction=.3, gravity_glob=[0., 0.], slip=.3)
+   physenv = cake.c_master(friction=.3, gravity_glob=[0., 0.], slip=.2)
    
    ## Object Creation
    bubble_starts = [[w/2, h/2]]

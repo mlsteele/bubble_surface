@@ -32,6 +32,10 @@ class c_master:
 		self.nodes.append(newnode)
 		self.nodesLen += 1
 		return newnode
+
+	def remove_node(s, node):
+		s.nodes.remove(node)
+		s.nodesLen -= 1
 	
 	def make_spring(self, ma, mb, targl, i_springk, damp=0.):
 		if targl == True:
