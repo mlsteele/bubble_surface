@@ -10,20 +10,19 @@ n = numpy
 import math
 import time
 
+
 class c_master:
-	def __init__(self, friction=1., gravity_glob=numpy.zeros(2), slip=1):
-		s = self
-		
+	def __init__(s, friction=1., gravity_glob=numpy.zeros(2), slip=1):
 		# Holders
 		s.nodes, s.springs, s.walls, s.bangles = [], [], [], []
 		s.nodesLen, s.springsLen, s.wallsLen, s.banglesLen = 0, 0, 0, 0
+		s.update_objects = []
 		
 		s.friction = float(friction)
 		s.gravity_glob = s.float_array(gravity_glob)
 		s.slip = float(slip)
 		s.simtime = 0.
-		s.lag = 0.
-		s.timestep = 0.
+		s.lagged_time = 0.
 	
 	def make_node(self, i_mass, i_pos, i_vel=numpy.zeros(2)):
 		i_mass = float(i_mass)
@@ -60,15 +59,14 @@ class c_master:
 		self.wallsLen += 1
 		return newwall
 	
-	def update(self, nowtime, max=False):
-		s = self
-		
-		self.timestep = nowtime - (self.simtime + self.lag)
+	def update(s, nowtime, max=False):
+		last_timestep = nowtime - (s.simtime + s.lagged_time)
 		lagged = False
-		if (self.timestep >= max) and (max):
-			self.lag += (self.timestep-float(max))
-#			print "JUMPED!\tproposed step: " +str(self.timestep) +"\ttimestep set to " + str(max) + "\tlag is now: " + str(self.lag)
-			self.timestep = float(max)
+		if max and (last_timestep >= max):
+			s.lagged_time += (last_timestep-float(max))
+#			print "JUMPED!\tproposed step: " +str(last_timestep) +"\ttimestep set to " + str(max) + "\tlag is now: " + str(s.lagged_time)
+			print "WARN: physics jumped"
+			last_timestep = float(max)
 			lagged = True
 		
 		# update springs
@@ -81,20 +79,25 @@ class c_master:
 		
 		# update nodes w/ walls		
 		for node in s.nodes:
-			node.vel *= self.friction**self.timestep
-			node.accel += self.gravity_glob
-			node.update(self.timestep)
+			node.vel *= s.friction**last_timestep
+			node.accel += s.gravity_glob
+			node.update(last_timestep)
 			# postmortem wall check
 			for wall in s.walls:
 				if wall.act(node): 
-					node.update(self.timestep, wall=True)
+					node.update(last_timestep, wall=True)
+
+		[obj.update(last_timestep) for obj in s.update_objects]
 		
 		# update simulation time
-		self.simtime += self.timestep
+		s.simtime += last_timestep
 		if lagged:
 			return False
 		else:
-			return self.timestep
+			return last_timestep
+
+	def add_update_object(s, obj):
+		s.update_objects.append(obj)
 	
 	def list_nodes(self):
 		return (o.pos for o in self.nodes)
