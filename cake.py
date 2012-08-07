@@ -22,8 +22,7 @@ class c_master:
 		s.gravity_glob = s.float_array(gravity_glob)
 		s.slip = float(slip)
 		s.simtime = 0.
-		s.lagged_time = 0.
-	
+
 	def make_node(self, i_mass, i_pos, i_vel=numpy.zeros(2)):
 		i_mass = float(i_mass)
 		i_pos = self.float_array(i_pos)
@@ -63,16 +62,7 @@ class c_master:
 		self.wallsLen += 1
 		return newwall
 	
-	def update(s, nowtime, max=False):
-		last_timestep = nowtime - (s.simtime + s.lagged_time)
-		lagged = False
-		if max and (last_timestep >= max):
-			s.lagged_time += (last_timestep-float(max))
-#			print "JUMPED!\tproposed step: " +str(last_timestep) +"\ttimestep set to " + str(max) + "\tlag is now: " + str(s.lagged_time)
-			print "WARN: physics jumped"
-			last_timestep = float(max)
-			lagged = True
-		
+	def update(s, timestep):
 		# update springs
 		for spring in s.springs:
 			spring.update()
@@ -83,22 +73,19 @@ class c_master:
 		
 		# update nodes w/ walls		
 		for node in s.nodes:
-			node.vel *= s.friction**last_timestep
+			node.vel *= s.friction**timestep
 			node.accel += s.gravity_glob
-			node.update(last_timestep)
+			node.update(timestep)
 			# postmortem wall check
 			for wall in s.walls:
 				if wall.act(node): 
-					node.update(last_timestep, wall=True)
+					node.update(timestep, wall=True)
 
-		[obj.update(last_timestep) for obj in s.update_objects]
+		[obj.update(timestep) for obj in s.update_objects]
 		
 		# update simulation time
-		s.simtime += last_timestep
-		if lagged:
-			return False
-		else:
-			return last_timestep
+		s.simtime += timestep
+		return s.simtime
 
 	def add_update_object(s, obj):
 		s.update_objects.append(obj)

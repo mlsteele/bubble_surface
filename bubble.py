@@ -36,7 +36,7 @@ class bubble:
       in zip(s.nodes, s.nodes[1:] + s.nodes[0:1])))
 
   def update(s, dt):
-    print "relative scaling %s" % (s.calc_area() / s.area)
+    # print "relative scaling %s" % (s.calc_area() / s.area)
 
     s._redistribute_surface()
     s._contract(dt)
@@ -87,7 +87,7 @@ class bubble:
       # print d / s.dot_spacing
       if d < s.dot_spacing * 0.4:
         removals.append(a)
-        print "removing node"
+        # print "removing node"
 
     for rn in removals:
       s.nodes.remove(rn)

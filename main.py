@@ -7,11 +7,9 @@ import cake, bubble
 def fp(pos):
   return n.array([float(pos[0]), float(pos[1])])
 
-def render(lagged):
+def render():
    # Graphics
    screen.fill((255, 255, 255))
-   if lagged:
-      pd.circle(screen, (255, 0, 0), (w/2, h/2), 30)
    
    drawsprings = physenv.list_springs()
    for dp1, dp2 in drawsprings:
@@ -116,12 +114,12 @@ def main():
 
 
    
-   timescale = 1
-   timestep = time.time()
-   time_last = time.time()
-   time_start = time.time()
+   time_stack = 0.
+   time_stack_last = time.time()
+   time_step = 0.033
+   timescale = time_step / 0.03
    last_render = 0.
-   lagged = False
+   fps = 50.
    frame = -1
    while True:
       frame += 1
@@ -140,10 +138,11 @@ def main():
          if event.type == pygame.MOUSEBUTTONDOWN:
             pass
       
-      timestep = time.time() - time_last
-      time_last = time.time()
-      if physenv.update((time.time()-time_start)/timescale, max=.033) == False:
-         lagged = True
+      time_stack += (time.time() - time_stack_last) * timescale
+      time_stack_last = time.time()
+      while time_stack >= time_step:
+         physenv.update(time_step)
+         time_stack -= time_step
       #  print "simtime\t" + str(physenv.simtime)
       #  print "time offset\t" + str((time.time() - time_start) - physenv.simtime)
       #  print "frame\t" + str(frame)
@@ -152,11 +151,9 @@ def main():
       ## Render
       # fps frames per second
       since_render = time.time() - last_render
-      fps = 60.
       dectime = time.time() - int(time.time())
       if since_render >= 1/fps:
-         render(lagged)
-         lagged = False
+         render()
          last_render = time.time()
 
 if __name__ == '__main__':
