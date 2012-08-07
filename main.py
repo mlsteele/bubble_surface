@@ -58,7 +58,7 @@ def main():
    ## Graphics Initialization
    w, h = 400, 400
    screen = pygame.display.set_mode((w, h))
-   pygame.display.set_caption("Cake Physics Engine")
+   pygame.display.set_caption("Bubble")
    pd = pygame.draw
    
    ## Setup physenv
