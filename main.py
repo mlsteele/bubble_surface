@@ -33,14 +33,23 @@ def render(lagged):
    pygame.display.flip()
 
 def make_tee(xs, ys):
-   lines = [
-      [fp([xs[0], ys[0]]), fp([xs[1], ys[0]])],
-      [fp([xs[1], ys[0]]), fp([xs[1], ys[1]])],
-      [fp([xs[2], ys[0]]), fp([xs[2], ys[1]])],
-      [fp([xs[2], ys[0]]), fp([xs[3], ys[0]])] ]
+   [physenv.make_wall([a, b]) for (a, b)
+   in [[[xs[0], ys[0]], [xs[1], ys[0]]],
+       [[xs[1], ys[0]], [xs[1], ys[1]]],
+       [[xs[2], ys[0]], [xs[2], ys[1]]],
+       [[xs[2], ys[0]], [xs[3], ys[0]]] ]]
 
-   for (a, b) in lines:
-      physenv.make_wall([a, b])
+def make_ray_channel(centroid, angle, rad, length):
+   centroid, angle, rad, length = fp(centroid), float(angle), float(rad), float(length)
+   def fa(ang): return fp([n.cos(ang), n.sin(ang)])   
+   centroid2 = centroid + fa(angle) * length
+   wp = [fa(angle + n.pi * 0.5) * rad, fa(angle + n.pi * 1.5) * rad]
+   physenv.make_wall([wp[0] + centroid, wp[0] + centroid2])
+   physenv.make_wall([wp[1] + centroid, wp[1] + centroid2])
+
+def make_tri_channels(centroid, angles):
+   centroid, angles = fp(centroid), [float(a) for a in angles]
+   [make_ray_channel(centroid, a, 10, 100) for a in angles]
 
 def main():
    # global variables
@@ -69,6 +78,12 @@ def main():
 
    bst10, bst11 = bubble_starts[0][0], bubble_starts[0][1]
    make_tee([bst10 - 80, bst10 - 18, bst10 + 18, bst10 + 80], [bst11 - 20, bst11 + 50])
+   # make_ray_channel([100, 50], 0.3, 10, 100)
+   # make_tri_channels([200, 300], [0.1, 0.9, 2.3])
+
+   c8 = [100, 50]
+   [make_ray_channel(centroid=c8, angle=a, rad=10, length=100)
+      for a in [a + n.pi/2 for a in [s * n.pi/5 for s in [-1, 1]]]]
    
    timescale = 1
    timestep = time.time()
