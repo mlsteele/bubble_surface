@@ -1,16 +1,10 @@
-Amoeba
+Bubble Surface
 ======
 
-Physics simulation experiment
-Shameless copy of the 2d game Gish
-
-Number keys to change type
-Arrow keys to move
-Space bar to expand (jump)
-A, S, and D might work
-V to change draw mode
+Physics simulation experiment.
 
 Dependencies:
+Numpy
 PyGame
 
 The physics 'engine' is called Cake.
