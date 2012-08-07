@@ -72,26 +72,21 @@ class bubble:
       d = n.linalg.norm(a.pos - b.pos)
       if d > s.dot_spacing:
         c = (a.pos + b.pos) / 2
-        nn = s.physenv.make_node(s.node_proto_mass, c)
-        insertions.append((a, nn))
+        new_node = s.physenv.make_node(s.node_proto_mass, c)
+        insertions.append((a, new_node))
 
-    for (a, nn) in insertions:
-      i = (s.nodes.index(a) + 1) % len(s.nodes)
-      s.nodes.insert(i, nn)
+    for (adjacent_node, new_node) in insertions:
+      i = (s.nodes.index(adjacent_node) + 1) % len(s.nodes)
+      s.nodes.insert(i, new_node)
 
   def _redistrubte_surface_remove(s):
     removals = []
 
     for (a, b) in zip(s.nodes, s.nodes[1:] + s.nodes[0:1]):
       d = n.linalg.norm(a.pos - b.pos)
-      # print d / s.dot_spacing
-      if d < s.dot_spacing * 0.4:
-        removals.append(a)
-        # print "removing node"
-
-    for rn in removals:
-      s.nodes.remove(rn)
-      s.physenv.remove_node(rn)
+      if d < s.dot_spacing * 0.5:
+        s.nodes.remove(a)
+        s.physenv.remove_node(a)
 
   def _assemble(s, centroid, area):
     rad = math.sqrt(area / n.pi)

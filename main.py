@@ -112,7 +112,9 @@ def main():
    c42 = [w/2,h/2-30]
    make_wye(org = c42, channelWidth = 30, theta = n.pi/5)
 
-
+   # c8 = [100, 50]
+   # [make_ray_channel(centroid=c8, angle=a, rad=10, length=100)
+   #    for a in [a + n.pi/2 for a in [s * n.pi/5 for s in [-1, 1]]]]
    
    time_stack = 0.
    time_stack_last = time.time()
