@@ -18,7 +18,7 @@ class bubble:
   def __init__(s, physenv, centroid, area):
     s.physenv = physenv
     s.area = float(area)
-    s.dot_spacing = 8.0
+    s.dot_spacing = 5.0 # mesh density
     s.node_proto_mass = 1
 
     s._assemble(fp(centroid), area)
@@ -43,13 +43,13 @@ class bubble:
     s._expand(dt)
 
   def _contract(s, dt):
-    # force_time = 5000.
+    # force_time = 8000.
     # for (a,b,c) in zip(s.nodes, s.nodes[1:] + s.nodes[0:1], s.nodes[2:] + s.nodes[0:2]):
     #   d = (a.pos + c.pos - 2 * b.pos)
     #   dl = n.linalg.norm(d)
     #   if dl != 0:
     #     b.accel += d / dl * force_time / b.mass * dt
-    force_time = 800.
+    force_time = 3000.
     for (a,b,c) in zip(s.nodes, s.nodes[1:] + s.nodes[0:1], s.nodes[2:] + s.nodes[0:2]):
       d = (a.pos + c.pos - 2 * b.pos)
       b.accel += d * force_time / b.mass * dt
@@ -57,7 +57,7 @@ class bubble:
   def _expand(s, dt):
     if s.calc_area() > s.area: return
 
-    force_time = 6000.
+    force_time = 8000.
     for (a,b,c) in zip(s.nodes, s.nodes[1:] + s.nodes[0:1], s.nodes[2:] + s.nodes[0:2]):
       parallel = a.pos - c.pos
       pre_normal = fp([-parallel[1], parallel[0]])

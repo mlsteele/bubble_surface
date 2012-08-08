@@ -106,7 +106,7 @@ class c_master:
 
 	def test_line_against_walls(s, a, b):
 		for wall in s.walls:
-			if wall.line_intersect_test(a, b):
+			if wall.line_intersect_test_new(a, b):
 				return True
 		return False
 
@@ -233,7 +233,7 @@ class c_wall:
 		self.parallel = self.parallel / numpy.linalg.norm(self.parallel)
 	
 	def act(s, obj):
-		if s.line_intersect_test(obj.oldpos, obj.pos) == False:
+		if s.line_intersect_test_new(obj.oldpos, obj.pos) == False:
 			return False
 
 		obj.pos = numpy.array(obj.oldpos)
@@ -242,30 +242,12 @@ class c_wall:
 
 		return True
 
-	def line_intersect_test(s, a, b):
+	def line_intersect_test_new(s, A, B):
 		# intersection thanks to http://www.geog.ubc.ca/courses/klink/gis.notes/ncgia/u32.html#SEC32.3.5
-		
 		# lines A-B, C-D
-		A = a
-		x1 = A[0]
-		y1 = A[1]
-		
-		B = b
-		x2 = B[0]
-		y2 = B[1]
-		
-		C = s.line[0,0:2]
-		u1 = s.line[0,0]
-		v1 = s.line[0,1]
-		
-		D = s.line[1,0:2]
-		u2 = s.line[1,0]
-		v2 = s.line[1,1]
-		
+		C, D = s.line
+
 		def ccw(A,B,C):
 			return (C[1]-A[1])*(B[0]-A[0]) > (B[1]-A[1])*(C[0]-A[0])
-
-		def intersect(A,B,C,D):
-			return ccw(A,C,D) != ccw(B,C,D) and ccw(A,B,C) != ccw(A,B,D)
 		
-		return intersect(A,B,C,D)
+		return ccw(A,C,D) != ccw(B,C,D) and ccw(A,B,C) != ccw(A,B,D)

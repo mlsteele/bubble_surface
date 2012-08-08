@@ -121,7 +121,8 @@ def main():
    time_step = 0.033
    timescale = time_step / 0.03
    last_render = 0.
-   fps = 50.
+   fps_max = 50.
+   fps_min = 50.
    frame = -1
    while True:
       frame += 1
@@ -141,10 +142,14 @@ def main():
             pass
       
       time_stack += (time.time() - time_stack_last) * timescale
+      # time_stack += time_step
       time_stack_last = time.time()
+      frame_calc_start = time.time()
       while time_stack >= time_step:
          physenv.update(time_step)
          time_stack -= time_step
+         if time.time() - frame_calc_start > 1/fps_min:
+            break
       #  print "simtime\t" + str(physenv.simtime)
       #  print "time offset\t" + str((time.time() - time_start) - physenv.simtime)
       #  print "frame\t" + str(frame)
@@ -154,7 +159,7 @@ def main():
       # fps frames per second
       since_render = time.time() - last_render
       dectime = time.time() - int(time.time())
-      if since_render >= 1/fps:
+      if since_render >= 1/fps_max:
          render()
          last_render = time.time()
 
