@@ -10,6 +10,11 @@ n = numpy
 import math
 import time
 
+def float_array(ia):
+	oa = numpy.zeros(len(ia))
+	for i in range(0,len(ia)):
+		oa[i] = ia[i]
+	return oa
 
 class c_master:
 	def __init__(s, friction=1., gravity_glob=numpy.zeros(2), slip=1):
@@ -19,14 +24,14 @@ class c_master:
 		s.update_objects = []
 		
 		s.friction = float(friction)
-		s.gravity_glob = s.float_array(gravity_glob)
+		s.gravity_glob = float_array(gravity_glob)
 		s.slip = float(slip)
 		s.simtime = 0.
 
 	def make_node(self, i_mass, i_pos, i_vel=numpy.zeros(2)):
 		i_mass = float(i_mass)
-		i_pos = self.float_array(i_pos)
-		i_vel = self.float_array(i_vel)
+		i_pos = float_array(i_pos)
+		i_vel = float_array(i_vel)
 		newnode = c_node(self, i_mass, i_pos, i_vel)
 		self.nodes.append(newnode)
 		self.nodesLen += 1
@@ -55,8 +60,8 @@ class c_master:
 			print "Line not created! Check array length."
 			return False
 		formed_line = numpy.zeros( (2,2) )
-		formed_line[0] = self.float_array(i_line[0])
-		formed_line[1] = self.float_array(i_line[1])
+		formed_line[0] = float_array(i_line[0])
+		formed_line[1] = float_array(i_line[1])
 		newwall = c_wall(self, formed_line, slip)
 		self.walls.append(newwall)
 		self.wallsLen += 1
@@ -98,12 +103,12 @@ class c_master:
 	
 	def list_walls(self):
 		return (o.line for o in self.walls)
-	
-	def float_array(self, ia):
-		oa = numpy.zeros(len(ia))
-		for i in range(0,len(ia)):
-			oa[i] = ia[i]
-		return oa
+
+	def test_line_against_walls(s, a, b):
+		for wall in s.walls:
+			if wall.line_intersect_test(a, b):
+				return True
+		return False
 
 class c_node:
 	def __init__(self, i_master, i_mass, i_pos, i_vel):
@@ -227,25 +232,35 @@ class c_wall:
 		self.parallel = (self.line[1]-self.line[0])
 		self.parallel = self.parallel / numpy.linalg.norm(self.parallel)
 	
-	def act(self, obj):
-		# all this thanks to http://www.geog.ubc.ca/courses/klink/gis.notes/ncgia/u32.html#SEC32.3.5
+	def act(s, obj):
+		if s.line_intersect_test(obj.oldpos, obj.pos) == False:
+			return False
+
+		obj.pos = numpy.array(obj.oldpos)
+		obj.vel = numpy.dot(obj.vel, s.parallel) * s.parallel
+		obj.vel *= s.slip
+
+		return True
+
+	def line_intersect_test(s, a, b):
+		# intersection thanks to http://www.geog.ubc.ca/courses/klink/gis.notes/ncgia/u32.html#SEC32.3.5
 		
 		# lines A-B, C-D
-		A = obj.oldpos
+		A = a
 		x1 = A[0]
 		y1 = A[1]
 		
-		B = obj.pos
+		B = b
 		x2 = B[0]
 		y2 = B[1]
 		
-		C = self.line[0,0:2]
-		u1 = self.line[0,0]
-		v1 = self.line[0,1]
+		C = s.line[0,0:2]
+		u1 = s.line[0,0]
+		v1 = s.line[0,1]
 		
-		D = self.line[1,0:2]
-		u2 = self.line[1,0]
-		v2 = self.line[1,1]
+		D = s.line[1,0:2]
+		u2 = s.line[1,0]
+		v2 = s.line[1,1]
 		
 		def ccw(A,B,C):
 			return (C[1]-A[1])*(B[0]-A[0]) > (B[1]-A[1])*(C[0]-A[0])
@@ -253,12 +268,4 @@ class c_wall:
 		def intersect(A,B,C,D):
 			return ccw(A,C,D) != ccw(B,C,D) and ccw(A,B,C) != ccw(A,B,D)
 		
-		xsect_bool = intersect(A,B,C,D)
-		if xsect_bool != True:
-			return False
-		
-		obj.pos = numpy.array(obj.oldpos)
-		obj.vel = numpy.dot(obj.vel,self.parallel)*self.parallel
-		obj.vel *= self.slip
-		
-		return True
+		return intersect(A,B,C,D)

@@ -23,7 +23,6 @@ class bubble:
 
     s._assemble(fp(centroid), area)
 
-
   def calc_perimeter(s):
     return sum(n.linalg.norm(b - a)
       for (a, b)
@@ -38,14 +37,22 @@ class bubble:
   def update(s, dt):
     # print "relative scaling %s" % (s.calc_area() / s.area)
 
-    s._redistribute_surface()
+    s._redistrubte_surface_add()
+    s._redistrubte_surface_remove()
     s._contract(dt)
     s._expand(dt)
 
   def _contract(s, dt):
+    # force_time = 5000.
+    # for (a,b,c) in zip(s.nodes, s.nodes[1:] + s.nodes[0:1], s.nodes[2:] + s.nodes[0:2]):
+    #   d = (a.pos + c.pos - 2 * b.pos)
+    #   dl = n.linalg.norm(d)
+    #   if dl != 0:
+    #     b.accel += d / dl * force_time / b.mass * dt
     force_time = 800.
     for (a,b,c) in zip(s.nodes, s.nodes[1:] + s.nodes[0:1], s.nodes[2:] + s.nodes[0:2]):
-      b.accel += (a.pos + c.pos - 2 * b.pos) * force_time / b.mass * dt
+      d = (a.pos + c.pos - 2 * b.pos)
+      b.accel += d * force_time / b.mass * dt
 
   def _expand(s, dt):
     if s.calc_area() > s.area: return
@@ -61,19 +68,16 @@ class bubble:
       else:
         raise Exception("zero length surface segment")
 
-  def _redistribute_surface(s):
-    s._redistrubte_surface_remove()
-    s._redistrubte_surface_add()
-
   def _redistrubte_surface_add(s):
     insertions = []
 
     for (a, b) in zip(s.nodes, s.nodes[1:] + s.nodes[0:1]):
-      d = n.linalg.norm(a.pos - b.pos)
-      if d > s.dot_spacing:
-        c = (a.pos + b.pos) / 2
-        new_node = s.physenv.make_node(s.node_proto_mass, c)
-        insertions.append((a, new_node))
+      if not s.physenv.test_line_against_walls(a.pos, b.pos):
+        d = n.linalg.norm(a.pos - b.pos)
+        if d > s.dot_spacing:
+          c = (a.pos + b.pos) / 2
+          new_node = s.physenv.make_node(s.node_proto_mass, c)
+          insertions.append((a, new_node))
 
     for (adjacent_node, new_node) in insertions:
       i = (s.nodes.index(adjacent_node) + 1) % len(s.nodes)
