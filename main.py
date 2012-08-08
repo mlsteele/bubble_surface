@@ -102,10 +102,10 @@ def main():
    pd = pygame.draw
    
    ## Setup physenv
-   physenv = cake.c_master(friction=.3, gravity_glob=[0., 0.], slip=.2)
+   physenv = cake.c_master(friction=.3, gravity_glob=[0., -50.], slip=0.0)
    
    ## Object Creation
-   bubble_starts = [[w/2, h/2]]
+   bubble_starts = [[w/2, h/2 + 100]]
    bubbles = [bubble.bubble(physenv, c, 500) for c in bubble_starts]
    bubbles[0].area *= 6
 
