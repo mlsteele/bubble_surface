@@ -34,9 +34,21 @@ class bubble:
       for (a, b)
       in zip(s.nodes, s.nodes[1:] + s.nodes[0:1])))
 
-  def update(s, dt):
-    # print "relative scaling %s" % (s.calc_area() / s.area)
+  def has_settled(s):
+    # return abs(s.calc_area() / s.area - 1) < 0.0005 \
+    # print sum(n.linalg.norm(node.vel) for node in s.nodes) / len(s.nodes)
+    # print max(n.linalg.norm(node.vel) for node in s.nodes)
+    return (abs(s.calc_area() / s.area - 1) < 0.0001) and all(n.linalg.norm(node.vel) < 10 for node in s.nodes)
 
+  def print_info(s):
+    print "\nbubble info\n----------"
+    print "avg vel: %s" % (sum(n.linalg.norm(node.vel) for node in s.nodes) / len(s.nodes))
+    print "max vel: %s" % max(n.linalg.norm(node.vel) for node in s.nodes)
+    print "current area: %s" % (s.calc_area())
+    print "area ratio: %s" % (s.calc_area() / s.area)
+    print "area diff: %s" % (s.calc_area() - s.area)
+
+  def update(s, dt):
     s._redistrubte_surface_add()
     s._redistrubte_surface_remove()
     s._contract(dt)

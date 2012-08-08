@@ -106,7 +106,7 @@ class c_master:
 
 	def test_line_against_walls(s, a, b):
 		for wall in s.walls:
-			if wall.line_intersect_test_new(a, b):
+			if wall.line_intersect_test(a, b):
 				return True
 		return False
 
@@ -233,7 +233,7 @@ class c_wall:
 		self.parallel = self.parallel / numpy.linalg.norm(self.parallel)
 	
 	def act(s, obj):
-		if s.line_intersect_test_new(obj.oldpos, obj.pos) == False:
+		if s.line_intersect_test(obj.oldpos, obj.pos) == False:
 			return False
 
 		obj.pos = numpy.array(obj.oldpos)
@@ -242,10 +242,16 @@ class c_wall:
 
 		return True
 
-	def line_intersect_test_new(s, A, B):
+	def line_intersect_test(s, A, B):
 		# intersection thanks to http://www.geog.ubc.ca/courses/klink/gis.notes/ncgia/u32.html#SEC32.3.5
 		# lines A-B, C-D
 		C, D = s.line
+
+		# bounding box check for spares intersections
+		if max(A[0], B[0]) < min(C[0], D[0]): return False
+		if max(A[1], B[1]) < min(C[1], D[1]): return False
+		if min(A[0], B[0]) > max(C[0], D[0]): return False
+		if min(A[1], B[1]) > max(C[1], D[1]): return False
 
 		def ccw(A,B,C):
 			return (C[1]-A[1])*(B[0]-A[0]) > (B[1]-A[1])*(C[0]-A[0])

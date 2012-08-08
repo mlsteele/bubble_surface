@@ -30,6 +30,16 @@ def render():
       
    pygame.display.flip()
 
+def handle_common_events(handler=None):
+   ## Event handler
+   for event in pygame.event.get():
+      if handler and not handler(event):
+         if event.type == pygame.QUIT:
+            pygame.quit(); sys.exit();
+         if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE or event.unicode == 'q':
+               pygame.quit(); sys.exit();
+
 def make_tee(xs, ys):
    [physenv.make_wall([a, b]) for (a, b)
    in [[[xs[0], ys[0]], [xs[1], ys[0]]],
@@ -139,7 +149,7 @@ def main():
             if event.unicode in ['1', '2', '3', '4', '5', '6', '7', '8', '9']:
                pass
          if event.type == pygame.MOUSEBUTTONDOWN:
-            pass
+            [b.print_info() for b in bubbles]
       
       time_stack += (time.time() - time_stack_last) * timescale
       # time_stack += time_step
@@ -162,6 +172,25 @@ def main():
       if since_render >= 1/fps_max:
          render()
          last_render = time.time()
+
+
+   # def info_on_click(e):
+   #    if e.type == pygame.MOUSEBUTTONDOWN:
+   #       bubbles[0].print_info()
+
+   # def update_seq():
+   #    [physenv.update(0.033) for x in range(0,10)]
+   #    while not bubbles[0].has_settled():
+   #       handle_common_events(info_on_click)
+   #       physenv.update(0.033)
+
+   # update_seq()
+
+   # render()
+
+   # while True:
+   #    handle_common_events(info_on_click)
+
 
 if __name__ == '__main__':
    main()
