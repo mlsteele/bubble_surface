@@ -39,6 +39,38 @@ def make_tee(xs, ys):
        [[xs[2], ys[0]], [xs[2], ys[1]]],
        [[xs[2], ys[0]], [xs[3], ys[0]]] ]]
 
+def make_wye(org, channelWidth, theta): #org is the center point of the junction. theta is angle below horizontal x axis
+  def w(a, b):
+    physenv.make_wall([a,b])
+  org, channelWidth, theta = fp(org), float(channelWidth), float(theta)
+  channelHeightMult = 10
+  channelHeight = channelWidth*channelHeightMult
+  junctionYLoc = channelHeight/2
+  yU = junctionYLoc - channelWidth/2
+  yL = yU + channelWidth/n.cos(theta)
+  offshootXDistance = channelHeight/4
+  offshootXEnd = offshootXDistance +channelWidth
+  yLEndPoint = n.tan(theta)*(offshootXEnd - channelWidth)+yL
+  yUEndPoint = n.tan(theta)*(offshootXEnd - channelWidth)+yU
+  org = org - [channelWidth/2,channelHeight/2]
+  point1 = org
+  point2 = org + [0,channelHeight]
+  point3 = org + [channelWidth, channelHeight]
+  point4 = org + [channelWidth, yL]
+  point5 = org + [offshootXEnd, yLEndPoint]
+  point6 = org + [offshootXEnd, yUEndPoint]
+  point7 = org + [channelWidth, yU]
+  point8 = org + [channelWidth, 0]
+  w(point1, point2)
+  w(point2, point3)
+  w(point3, point4)
+  w(point4,point5)
+  w(point5,point6)
+  w(point6,point7)
+  w(point7,point8)
+  w(point8,point1)
+  
+
 def make_ray_channel(centroid, angle, rad, length):
    centroid, angle, rad, length = fp(centroid), float(angle), float(rad), float(length)
    def fa(ang): return fp([n.cos(ang), n.sin(ang)])   
@@ -76,14 +108,13 @@ def main():
    # physenv.make_wall([(400, h-50), (500, h)])
    # physenv.make_wall([(w-10, h),(w-100, 5)], 1.)
 
-   bst10, bst11 = bubble_starts[0][0], bubble_starts[0][1]
-   make_tee([bst10 - 80, bst10 - 18, bst10 + 18, bst10 + 80], [bst11 - 20, bst11 + 50])
    # make_ray_channel([100, 50], 0.3, 10, 100)
    # make_tri_channels([200, 300], [0.1, 0.9, 2.3])
 
-   c8 = [100, 50]
-   [make_ray_channel(centroid=c8, angle=a, rad=10, length=100)
-      for a in [a + n.pi/2 for a in [s * n.pi/5 for s in [-1, 1]]]]
+   c42 = [w/2,h/2-30]
+   make_wye(org = c42, channelWidth = 30, theta = n.pi/5)
+
+
    
    timescale = 1
    timestep = time.time()
