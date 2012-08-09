@@ -99,42 +99,12 @@ def make_tri_channels(centroid, angles):
    centroid, angles = fp(centroid), [float(a) for a in angles]
    [make_ray_channel(centroid, a, 10, 100) for a in angles]
 
-def main():
-   # global variables
-   global screen, pd, physenv, w, h, bubbles
-   
-   ## Graphics Initialization
-   w, h = 400, 400
-   screen = pygame.display.set_mode((w, h))
-   pygame.display.set_caption("Bubble")
-   pd = pygame.draw
-   
-   ## Setup physenv
-   grav_dir_index = 0
-   physenv = cake.c_master(friction=.3, gravity_glob=[0., [0, 50, -50.][grav_dir_index]], slip=0.0)
-   
-   ## Object Creation
-   bubble_starts = [[w/2, h/2 + [0, -100, 100][grav_dir_index]]]
-   bubbles = [bubble.bubble(physenv, c, 500) for c in bubble_starts]
-   bubbles[0].area *= 6
 
-   # terrain
-   # ground_wall = physenv.make_wall([(-200, h-20), (w+200, h-10)])
-   # slope_wall = physenv.make_wall([(200, h-5), (400, h-50)])
-   # slope_wall = physenv.make_wall([(120, 0), (140, h)])
-   # physenv.make_wall([(400, h-50), (500, h)])
-   # physenv.make_wall([(w-10, h),(w-100, 5)], 1.)
+def info_on_click(e):
+   if e.type == pygame.MOUSEBUTTONDOWN:
+      bubbles[0].print_info()
 
-   # make_ray_channel([100, 50], 0.3, 10, 100)
-   # make_tri_channels([200, 300], [0.1, 0.9, 2.3])
-
-   c42 = [w/2,h/2-30]
-   make_wye(org = c42, channelWidth = 30, theta = n.pi/5)
-
-   # c8 = [100, 50]
-   # [make_ray_channel(centroid=c8, angle=a, rad=10, length=100)
-   #    for a in [a + n.pi/2 for a in [s * n.pi/5 for s in [-1, 1]]]]
-   
+def run_continuous():
    time_stack = 0.
    time_stack_last = time.time()
    time_step = 0.033
@@ -182,24 +152,41 @@ def main():
          render()
          last_render = time.time()
 
+def run_until_condition():
+   [physenv.update(0.033) for x in range(0,10)]
+   while not bubbles[0].has_settled():
+      handle_common_events(info_on_click)
+      physenv.update(0.033)
 
-   # def info_on_click(e):
-   #    if e.type == pygame.MOUSEBUTTONDOWN:
-   #       bubbles[0].print_info()
+   render()
 
-   # def update_seq():
-   #    [physenv.update(0.033) for x in range(0,10)]
-   #    while not bubbles[0].has_settled():
-   #       handle_common_events(info_on_click)
-   #       physenv.update(0.033)
+   while True:
+      handle_common_events(info_on_click)
 
-   # update_seq()
+def main():
+   # global variables
+   global screen, pd, physenv, w, h, bubbles
+   
+   ## Graphics Initialization
+   w, h = 400, 400
+   screen = pygame.display.set_mode((w, h))
+   pygame.display.set_caption("Bubble")
+   pd = pygame.draw
+   
+   ## Setup physenv
+   grav_dir_index = 0
+   physenv = cake.c_master(friction=.3, gravity_glob=[0., [0, 50, -50.][grav_dir_index]], slip=0.0)
+   
+   ## Bubbles
+   bubble_starts = [[w/2, h/2 + [0, -100, 100][grav_dir_index]]]
+   bubbles = [bubble.bubble(physenv, c, 500) for c in bubble_starts]
+   bubbles[0].area *= 6
 
-   # render()
+   ## Walls
+   c42 = [w/2,h/2-30]
+   make_wye(org = c42, channelWidth = 30, theta = n.pi/5)
 
-   # while True:
-   #    handle_common_events(info_on_click)
-
+   [run_continuous, run_until_condition][0]()
 
 if __name__ == '__main__':
    main()
