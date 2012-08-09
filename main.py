@@ -17,10 +17,18 @@ def render():
       dp2 = [ int(dp2[0]), int(dp2[1]) ]
       pd.line(screen, (125, 125, 125), dp1, dp2, 1)
    
-   drawnodes = physenv.list_nodes()
-   for dp1 in drawnodes:
-      dp1 = [ int(dp1[0]), int(dp1[1]) ]
-      pd.circle(screen, (100, 100, 100), dp1, 2)
+   render_as_solid = True
+
+   if render_as_solid:
+      for bubble in bubbles:
+         poly = bubble.get_polygon()
+         pd.polygon(screen, (106, 208, 223), poly)
+         pd.polygon(screen, (0, 0, 0), poly, 1)
+   else:
+      drawnodes = physenv.list_nodes()
+      for dp1 in drawnodes:
+         dp1 = [ int(dp1[0]), int(dp1[1]) ]
+         pd.circle(screen, (100, 100, 100), dp1, 2)
 
    drawwalls = physenv.list_walls()
    for dp1, dp2 in drawwalls:
@@ -93,7 +101,7 @@ def make_tri_channels(centroid, angles):
 
 def main():
    # global variables
-   global screen, pd, physenv, w, h
+   global screen, pd, physenv, w, h, bubbles
    
    ## Graphics Initialization
    w, h = 400, 400

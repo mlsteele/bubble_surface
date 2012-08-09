@@ -48,6 +48,9 @@ class bubble:
     print "area ratio: %s" % (s.calc_area() / s.area)
     print "area diff: %s" % (s.calc_area() - s.area)
 
+  def get_polygon(s):
+    return [node.pos for node in s.nodes]
+
   def update(s, dt):
     s._redistrubte_surface_add()
     s._redistrubte_surface_remove()
