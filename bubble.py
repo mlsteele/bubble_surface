@@ -84,9 +84,9 @@ class bubble:
     insertions = []
 
     for (a, b) in zip(s.nodes, s.nodes[1:] + s.nodes[0:1]):
-      if not s.physenv.test_line_against_walls(a.pos, b.pos):
-        d = n.linalg.norm(a.pos - b.pos)
-        if d > s.dot_spacing:
+      d = n.linalg.norm(a.pos - b.pos)
+      if d > s.dot_spacing:
+        if not s.physenv.test_line_against_walls(a.pos, b.pos):
           c = (a.pos + b.pos) / 2
           new_node = s.physenv.make_node(s.node_proto_mass, c)
           insertions.append((a, new_node))
