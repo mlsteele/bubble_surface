@@ -159,9 +159,14 @@ def run_until_condition():
       physenv.update(0.033)
 
    render()
+   write_to_file()
 
    while True:
       handle_common_events(info_on_click)
+
+def write_to_file():
+   fname = "render/out/bubble.0.%s.png" % time.time()
+   pygame.image.save(screen, fname)
 
 def main():
    # global variables
