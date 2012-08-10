@@ -23,6 +23,9 @@ class bubble:
 
     s._assemble(fp(centroid), area)
 
+  def destroy(s):
+    [s.physenv.remove_node(node) for node in s.nodes]
+
   def calc_perimeter(s):
     return sum(n.linalg.norm(b - a)
       for (a, b)

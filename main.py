@@ -104,6 +104,10 @@ def info_on_click(e):
    if e.type == pygame.MOUSEBUTTONDOWN:
       bubbles[0].print_info()
 
+def write_to_file():
+   fname = "render/out/bubble.0.%s.png" % time.time()
+   pygame.image.save(screen, fname)
+
 def run_continuous():
    time_stack = 0.
    time_stack_last = time.time()
@@ -161,12 +165,20 @@ def run_until_condition():
    render()
    write_to_file()
 
-   while True:
-      handle_common_events(info_on_click)
+   # while True:
+   #    handle_common_events(info_on_click)
 
-def write_to_file():
-   fname = "render/out/bubble.0.%s.png" % time.time()
-   pygame.image.save(screen, fname)
+def run_cycle():
+   def recycle_bubble(t):
+      bubbles[0].destroy()
+      center = [w/2., h/2. - 100. + 200.*t]
+      bubbles[0] = bubble.bubble(physenv, center, 500)
+      bubbles[0].area *= 6
+
+   for t in [x * 0.02 for x in xrange(50)]:
+      print "cycle step: %s" % t
+      recycle_bubble(t)
+      run_until_condition()
 
 def main():
    # global variables
@@ -179,7 +191,7 @@ def main():
    pd = pygame.draw
    
    ## Setup physenv
-   grav_dir_index = 0
+   grav_dir_index = 1
    physenv = cake.c_master(friction=.3, gravity_glob=[0., [0, 50, -50.][grav_dir_index]], slip=0.0)
    
    ## Bubbles
@@ -190,8 +202,13 @@ def main():
    ## Walls
    c42 = [w/2,h/2-30]
    make_wye(org = c42, channelWidth = 30, theta = n.pi/5)
+   oy58 = -100
+   orx58 = 50
+   physenv.make_wall([[w/2 - orx58, h/2 + oy58], [w/2 + orx58, h/2 + oy58]])
 
-   [run_continuous, run_until_condition][0]()
+   run_continuous()
+   # run_until_condition_gui()
+   # run_cycle()
 
 if __name__ == '__main__':
    main()
