@@ -191,8 +191,8 @@ def main():
    pd = pygame.draw
    
    ## Setup physenv
-   grav_dir_index = 1
-   physenv = cake.c_master(friction=.3, gravity_glob=[0., [0, 50, -50.][grav_dir_index]], slip=0.0)
+   grav_dir_index = 0
+   physenv = cake.c_master(friction=1.0, gravity_glob=[0., [0, 50, -50.][grav_dir_index]], slip=0.0)
    
    ## Bubbles
    bubble_starts = [[w/2, h/2 + [0, -100, 100][grav_dir_index]]]
@@ -204,10 +204,10 @@ def main():
    make_wye(org = c42, channelWidth = 30, theta = n.pi/5)
    oy58 = -100
    orx58 = 50
-   physenv.make_wall([[w/2 - orx58, h/2 + oy58], [w/2 + orx58, h/2 + oy58]])
+   # physenv.make_wall([[w/2 - orx58, h/2 + oy58], [w/2 + orx58, h/2 + oy58]])
 
    run_continuous()
-   # run_until_condition_gui()
+   # run_until_condition()
    # run_cycle()
 
 if __name__ == '__main__':
